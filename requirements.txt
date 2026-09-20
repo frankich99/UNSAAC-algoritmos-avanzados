@@ -1,0 +1,2 @@
+# Dependencias para los laboratorios de Algoritmos Avanzados - UNSAAC
+matplotlib>=3.5.0

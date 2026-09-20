@@ -1,0 +1,5 @@
+n,tiempo_optimizada,tiempo_guia,razon,crecimiento
+1000,288.6 us,1.12 ms,3.9,
+4000,2.42 ms,8.91 ms,3.7,x8.4 / x7.9
+16000,4.62 ms,99.80 ms,21.6,x1.9 / x11.2
+64000,18.69 ms,1.653 s,88.4,x4.0 / x16.6

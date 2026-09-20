@@ -1,0 +1,37 @@
+n,prueba,obtenido,esperado,estado
+1,Ejemplo de la guia es factible,True,True,OK
+2,Cargas del ejemplo,"[7, 9, 9]","[7, 9, 9]",OK
+3,Falta un trabajo -> no factible,False,False,OK
+4,Trabajo duplicado -> no factible,False,False,OK
+5,Numero de maquinas incorrecto,False,False,OK
+6,Trabajo ajeno a la instancia,False,False,OK
+7,"Repetidos: set() aceptaria, Counter no","(True, False)","(True, False)",OK
+8,Repetidos bien asignados,True,True,OK
+9,m = 0 en cota_inferior -> ValueError,True,True,OK
+10,m < 0 en list_scheduling -> ValueError,True,True,OK
+11,m = 0 en Ramificar-Podar -> ValueError,True,True,OK
+12,Tiempo p_j = 0 -> ValueError,True,True,OK
+13,Tiempo negativo -> ValueError,True,True,OK
+14,Tiempo no entero -> ValueError,True,True,OK
+15,Sin trabajos: LB = 0,0,0,OK
+16,Sin trabajos: LS da 3 maquinas vacias,"([[], [], []], 0)","([[], [], []], 0)",OK
+17,Sin trabajos: optimo = 0,0,0,OK
+18,m = 1: LS = suma,22,22,OK
+19,m = 1: optimo = suma,22,22,OK
+20,m > n: LS = trabajo mas largo,9,9,OK
+21,m > n: LB = OPT = trabajo mas largo,"(9, 9)","(9, 9)",OK
+22,n = m: un trabajo por maquina,9,9,OK
+23,"Todos iguales, n = 3m: OPT = 3p = LB","(15, 15)","(15, 15)",OK
+24,"LB < OPT: [2,2,2], m=2","(3, 4)","(3, 4)",OK
+25,Ajustada LS m=2: r = 2 - 1/m,"(3, 2, True)","(3, 2, True)",OK
+26,Ajustada LS m=3: r = 2 - 1/m,"(5, 3, True)","(5, 3, True)",OK
+27,Ajustada LS m=4: r = 2 - 1/m,"(7, 4, True)","(7, 4, True)",OK
+28,Ajustada LPT m=2: r = 4/3 - 1/(3m),"(7, 6)","(7, 6)",OK
+29,Ajustada LPT m=3: r = 4/3 - 1/(3m),"(11, 9)","(11, 9)",OK
+30,Ajustada LPT m=4: r = 4/3 - 1/(3m),"(15, 12)","(15, 12)",OK
+31,LS y LPT no modifican la entrada,"[8, 3, 5, 3, 9, 1]","[8, 3, 5, 3, 9, 1]",OK
+32,Desempate determinista (dos ejecuciones),"([[8], [3, 3, 1], [5, 9]], 14)","([[8], [3, 3, 1], [5, 9]], 14)",OK
+33,Desempate: con cargas iguales gana el menor id,"[[5], [5], [5]]","[[5], [5], [5]]",OK
+34,Limite de nodos detiene la busqueda,True,True,OK
+35,300 instancias: las 900 salidas son factibles,300,300,OK
+36,300 instancias: OPT <= LPT y OPT <= LS,300,300,OK
