@@ -101,7 +101,7 @@
 
 % --- Enlaces y URLs con corte automático de línea ---
 \usepackage{xurl}
-\usepackage{hyperref}
+\usepackage[unicode=true, pdfencoding=auto, psdextra]{hyperref}
 \hypersetup{
     colorlinks=true,
     breaklinks=true,
@@ -109,9 +109,13 @@
     citecolor=black,       % Citas bibliograficas en negro
     urlcolor=blue!80!black, % Enlaces web externos
     plainpages=false,
+    bookmarksnumbered=true,
+    bookmarksopen=true,
+    bookmarksopenlevel=2,
     pdftitle={Informe de Laboratorio 03 - Vertex Cover, PTAS y FPTAS},
     pdfauthor={Grupo 5 - UNSAAC}
 }
+\usepackage{bookmark}
 
 % --- Ajustes tipográficos para micro-justificación ---
 \usepackage{microtype}
@@ -134,13 +138,16 @@
 \pagenumbering{roman}
 
 % --- ÍNDICE GENERAL (COLOR NEGRO) ---
+\pdfbookmark[1]{Índice General}{toc}
 \tableofcontents
 
 \clearpage
 
 % --- ÍNDICE DE FIGURAS Y TABLAS (COLOR NEGRO) ---
+\pdfbookmark[1]{Índice de Figuras}{lof}
 \listoffigures
 \vspace{1.2cm}
+\pdfbookmark[1]{Índice de Tablas}{lot}
 \listoftables
 
 \clearpage
