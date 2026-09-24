@@ -1,2 +1,4 @@
 # Dependencias para los laboratorios de Algoritmos Avanzados - UNSAAC
 matplotlib>=3.5.0
+networkx>=2.8
+numpy>=1.21.0
