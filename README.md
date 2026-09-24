@@ -85,7 +85,6 @@ UNSAAC-algoritmos-avanzados/
 │   ├── Guia 03.pdf                             # Guía oficial del laboratorio
 │   ├── compilar_informe.bat                    # Compilación automática del informe con 1 solo clic
 │   ├── modo_en_vivo.bat                        # Compilador vigilante en tiempo real (Ctrl + S)
-│   ├── subir_a_github.bat                      # Acceso directo para sincronización con GitHub
 │   │
 │   ├── codigo y notebook de lab_03/            # Código y experimentación empírica
 │   │   ├── grupo 5 guia 03.ipynb               # Notebook interactivo oficial (Jupyter y Colab)
@@ -183,10 +182,9 @@ O abrir interactivamente el cuaderno `grupo 5 guia 03.ipynb` en JupyterLab, VS C
 
 #### 3. Sincronización con GitHub
 Para enviar todos los avances confirmados a tu repositorio remoto:
-* Doble clic en `lab_03/subir_a_github.bat`, o ejecutar en la terminal:
-  ```bash
-  git push origin main
-  ```
+```bash
+git push origin main
+```
 
 ---
 
