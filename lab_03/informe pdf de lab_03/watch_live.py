@@ -37,6 +37,10 @@ def recompilar(directorio):
     cmd = ['pdflatex', '-interaction=nonstopmode', 'main.tex']
     p = subprocess.run(cmd, cwd=directorio, capture_output=True, text=True)
     
+    # Si LaTeX solicita otra pasada para resolver referencias cruzadas (evitar ??) o indices:
+    if p.returncode == 0 and ("Rerun to get" in p.stdout or "undefined references" in p.stdout):
+        p = subprocess.run(cmd, cwd=directorio, capture_output=True, text=True)
+
     if p.returncode == 0:
         pdf_path = os.path.join(directorio, 'main.pdf')
         if os.path.exists(pdf_path):
