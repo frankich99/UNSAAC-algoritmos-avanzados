@@ -75,6 +75,34 @@ def knapsack_fptas(pesos_orig, valores_orig, W, epsilon):
     return valor_real, peso_real, seleccion_orig, estados, K
 \end{lstlisting}
 
+\begin{lstlisting}[language=Python, caption={Validador formal de factibilidad para Knapsack 0/1}, label={lst:knap_validador}]
+def validar_factibilidad_knapsack(pesos, valores, W, seleccion):
+    if len(seleccion) != len(set(seleccion)):
+        return False, "Error: Indices duplicados en seleccion"
+    for idx in seleccion:
+        if idx < 0 or idx >= len(pesos):
+            return False, f"Error: Indice {idx} fuera de rango"
+    peso_total = sum(pesos[i] for i in seleccion)
+    if peso_total > W:
+        return False, f"Infactible: Peso {peso_total} supera capacidad W={W}"
+    valor_total = sum(valores[i] for i in seleccion)
+    return True, f"Factible: Peso={peso_total}/{W}, Valor={valor_total}"
+
+# Evaluacion de prueba de factibilidad (instancia representativa W=153)
+pesos_ej = [23, 31, 29, 44, 53, 38, 63, 85, 89, 82]
+valores_ej = [92, 57, 49, 68, 60, 43, 67, 84, 87, 72]
+sel_factible = [0, 1, 2, 4]      # Peso 136 <= 153 -> Factible
+sel_exceso = [0, 1, 2, 4, 7]     # Peso 221 > 153  -> Infactible
+
+print("Prueba 1 (Factible):", validar_factibilidad_knapsack(pesos_ej, valores_ej, 153, sel_factible))
+print("Prueba 2 (Infactible):", validar_factibilidad_knapsack(pesos_ej, valores_ej, 153, sel_exceso))
+\end{lstlisting}
+
+\begin{lstlisting}[style=consolestyle, caption={Salida de consola del Validador de Factibilidad Knapsack}]
+Prueba 1 (Factible): (True, 'Factible: Peso=136/153, Valor=258')
+Prueba 2 (Infactible): (False, 'Infactible: Peso 221 supera capacidad W=153')
+\end{lstlisting}
+
 \subsection{Resultados experimentales}
 Se evaluaron \textbf{20 instancias pequeñas} bajo cuatro valores de tolerancia $\varepsilon \in \{0.50, 0.25, 0.10, 0.05\}$, acumulando 80 evaluaciones. La Tabla \ref{tab:resumen_knap} presenta una muestra representativa:
 
@@ -134,10 +162,17 @@ Los valores escalados son $v'_i \le n/\varepsilon$, por lo que la suma de valore
 \end{equation}
 El costo crece de manera \textbf{estrictamente proporcional a $1/\varepsilon$} (crecimiento lineal en $1/\varepsilon$).
 
-\subsubsection*{3. ¿Cuándo reducir $\varepsilon$ NO mejora la calidad?}
+\subsubsection*{3. ¿Cuándo reducir $\varepsilon$ NO mejora la calidad o incluso puede empeorarla?}
 \begin{itemize}
-    \item \textbf{Mesetas de óptimo prematuro:} En muchas instancias, incluso con $\varepsilon = 0.50$, el orden relativo de los objetos ya reproduce exactamente el óptimo ($\text{ALG}_{0.50} = \text{OPT}$). Reducir $\varepsilon$ a $0.05$ no puede mejorar el valor real ya óptimo, pero sí multiplica el tiempo por diez.
-    \item \textbf{Efecto discreto del piso $\lfloor \cdot \rfloor$:} Pequeños cambios en $K$ pueden alterar empates numéricos en la tabla dinámica, produciendo mesetas locales de calidad.
+    \item \textbf{Mesetas de óptimo prematuro:} En muchas instancias (como \texttt{Inst\_01} con $\text{OPT}=566$), incluso con $\varepsilon = 0.50$ el orden relativo de los objetos ya reproduce exactamente el óptimo ($\text{ALG}_{0.50} = \text{OPT}$). Reducir $\varepsilon$ a $0.05$ no puede mejorar el valor real ya óptimo, pero sí multiplica el volumen de estados de 1892 a 19360 (un factor de $10\times$ en costo).
+    \item \textbf{Caso empírico donde reducir $\varepsilon$ empeora ligeramente la calidad (\texttt{Inst\_16}):}
+    En nuestro banco experimental se constató este fenómeno inusual en la instancia \texttt{Inst\_16} ($n=11, W=257, \text{OPT}=544$):
+    \begin{itemize}
+        \item Para $\varepsilon = 0.25$ ($K = 2.25$): obtuvo $\text{ALG} = 544$ ($100.0\%$ de calidad).
+        \item Para $\varepsilon = 0.10$ ($K = 0.90$): obtuvo $\text{ALG} = 543$ ($99.82\%$ de calidad, una unidad menos).
+        \item Para $\varepsilon = 0.05$ ($K = 0.45$): recuperó $\text{ALG} = 544$ ($100.0\%$).
+    \end{itemize}
+    \textbf{Explicación técnica:} Al reducir $\varepsilon$ de $0.25$ a $0.10$, el factor de escala $K$ disminuye, alterando de forma no uniforme los valores discretizados con la función piso $\lfloor v_i / K \rfloor$. Dicha discretización modificó un empate numérico en la Programación Dinámica, seleccionando un subconjunto con idéntico óptimo escalado pero cuyo valor original acumulado era 543 en vez de 544. Ambos valores satisfacen estrictamente la cota analítica ($(1 - 0.10) \times 544 = 489.6 \le 543$).
 \end{itemize}
 
 \subsection{Análisis gráfico de Knapsack FPTAS}

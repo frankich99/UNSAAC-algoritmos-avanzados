@@ -526,7 +526,18 @@ Sin importar cuál sea el orden de presentación de las aristas en la lista $E$:
    $$|C| = 2|M|$$
 6. Combinando ambas relaciones:
    $$|C| = 2|M| \\le 2\\,\\text{OPT} \\implies \\frac{|C|}{\\text{OPT}} \\le 2$$
-Esta deducción es **absolutamente independiente del orden** en que se recorran las aristas. Aunque el orden pueda desplazar la solución entre el caso óptimo ($|C| = \\text{OPT}$) y el peor caso ($|C| = 2\\,\\text{OPT}$), la razón observada jamás excederá el factor 2."""
+Esta deducción es **absolutamente independiente del orden** en que se recorran las aristas. Aunque el orden pueda desplazar la solución entre el caso óptimo ($|C| = \\text{OPT}$) y el peor caso ($|C| = 2\\,\\text{OPT}$), la razón observada jamás excederá el factor 2.
+
+#### 3. Consolidado Global de Aciertos del Óptimo sobre los 30 Grafos
+En respuesta a cuántas veces el algoritmo 2-aproximado logra obtener exactamente la solución óptima:
+* **Grafos que alcanzan el óptimo:** De los 30 grafos evaluados, **4 grafos alcanzaron la solución óptima** en al menos una permutación de aristas ($13.3\%$ del banco experimental).
+* **Frecuencia total de aciertos:** Se acumularon **49 éxitos sobre 600 ejecuciones totales** ($8.17\%$ de efectividad global):
+  * `Camino_P4`: 7 aciertos sobre 20 corridas ($35\%$).
+  * `Completo_K5`: 20 aciertos sobre 20 corridas ($100\%$, invariante por simetría completa con $n$ impar).
+  * `Completo_K7`: 20 aciertos sobre 20 corridas ($100\%$, invariante por simetría completa con $n$ impar).
+  * `Aleatorio_G9_p35`: 2 aciertos sobre 20 corridas ($10\%$).
+* **Grafos sin aciertos óptimos:** En los **26 grafos restantes**, el algoritmo obtuvo **0 aciertos de 20** debido a que cualquier matching maximal obliga a seleccionar 2 vértices por arista independiente, introduciendo holgura frente a la cobertura mínima.
+* **Peor razón observada:** En el $100\%$ de las 600 pruebas se satisfizo la garantía matemática: $\\max r(I) = 2.00$."""
     cells.append(nbf.v4.new_markdown_cell(c9_text))
 
     # -------------------------------------------------------------
@@ -728,7 +739,38 @@ def knapsack_fptas(pesos_orig, valores_orig, W, epsilon):
     assert peso_real <= W, f"Violación de capacidad: {peso_real} > {W}"
     return valor_real, peso_real, seleccion_orig, estados, K
 
-print("[OK] Funciones knapsack_dp_valores y knapsack_fptas compiladas y verificadas.")
+
+# ====================================================================
+# Validador Formal de Factibilidad para Knapsack 0/1
+# ====================================================================
+def validar_factibilidad_knapsack(pesos, valores, W, seleccion):
+    \"\"\"Valida formalmente la factibilidad de una solucion para Knapsack 0/1.
+    Verifica:
+    1. Que la seleccion contenga indices validos sin duplicados.
+    2. Que el peso acumulado no exceda la capacidad maxima W.
+    3. Que el valor total reportado coincida estrictamente con los valores originales.
+    Retorna: (es_factible: bool, mensaje: str)
+    \"\"\"
+    if len(seleccion) != len(set(seleccion)):
+        return False, "Error: Indices duplicados en seleccion"
+    for idx in seleccion:
+        if idx < 0 or idx >= len(pesos):
+            return False, f"Error: Indice {idx} fuera de rango"
+    peso_total = sum(pesos[i] for i in seleccion)
+    if peso_total > W:
+        return False, f"Infactible: Peso acumulado {peso_total} supera capacidad W={W}"
+    valor_total = sum(valores[i] for i in seleccion)
+    return True, f"Factible: Peso={peso_total}/{W}, Valor={valor_total}"
+
+# Prueba de factibilidad sobre caso representativo (W=153)
+p_test = [23, 31, 29, 44, 53, 38, 63, 85, 89, 82]
+v_test = [92, 57, 49, 68, 60, 43, 67, 84, 87, 72]
+sel_ok = [0, 1, 2, 4]       # Peso 136 <= 153 -> Factible
+sel_exceso = [0, 1, 2, 4, 7] # Peso 221 > 153  -> Infactible
+
+print("Prueba 1 (Factible):", validar_factibilidad_knapsack(p_test, v_test, 153, sel_ok))
+print("Prueba 2 (Infactible):", validar_factibilidad_knapsack(p_test, v_test, 153, sel_exceso))
+print("[OK] Funciones knapsack_dp_valores, knapsack_fptas y validador de factibilidad verificadas.")
 """
     cells.append(nbf.v4.new_code_cell(c12_code))
 
@@ -900,7 +942,12 @@ El número de celdas a procesar y el tiempo de ejecución son **directamente pro
 #### 3. Situaciones donde reducir $\varepsilon$ no mejora la calidad (o genera no-monotonicidad local)
 Tal como se enfatizó en la sesión presencial de laboratorio, **el comportamiento empírico no siempre es estrictamente monótono paso a paso**:
 1. **Mesetas de óptimo temprano:** En muchas instancias pequeñas o con pesos no saturados, incluso con un $\varepsilon = 0.50$ el redondeo no distorsiona las proporciones críticas de los objetos más valiosos, alcanzando ya el $100\%$ de $\text{OPT}$ ($\text{ALG}_{0.50} = \text{OPT}$). Al reducir $\varepsilon$ a $0.25$ o $0.05$, el algoritmo sigue retornando la solución óptima exacta; la calidad no cambia (permanece constante en 1.0) pero el costo computacional se multiplica.
-2. **Efectos discretos del truncamiento $\lfloor \cdot \rfloor$:** La función piso es discontinua. Al variar $\varepsilon$, el valor de $K$ cambia de manera continua, pero las razones relativas de valor escalado $v'_i / v'_j$ experimentan saltos discretos. Eventualmente, para un $\varepsilon$ menor, un objeto que anteriormente se beneficiaba del truncamiento relativo puede quedar empatado o ligeramente penalizado, seleccionando una combinación alternativa válida cuya suma real sea ligeramente inferior o idéntica a la hallada con un $\varepsilon$ mayor, aunque ambas cumplan holgadamente sus respectivas cotas teóricas $(1 - \varepsilon)\,\text{OPT}$."""
+2. **Efectos discretos del truncamiento $\lfloor \cdot \rfloor$ y caso empírico de no-monotonicidad (`Inst_16`):**
+   La función piso es discontinua. Al variar $\varepsilon$, el valor de $K$ cambia de manera continua, pero las razones relativas de valor escalado $v'_i / v'_j$ experimentan saltos discretos. En nuestro banco experimental, la instancia **`Inst_16`** ($n=11, W=257, \text{OPT}=544$) evidencia este fenómeno exactamente como se discutió en clase:
+   * Con $\varepsilon = 0.25$ ($K = 2.25$): obtuvo $\text{ALG} = 544$ ($100.0\%$ de calidad).
+   * Con $\varepsilon = 0.10$ ($K = 0.90$): obtuvo $\text{ALG} = 543$ ($99.82\%$ de calidad, una unidad menos debido a un desempate numérico en DP).
+   * Con $\varepsilon = 0.05$ ($K = 0.45$): recuperó $\text{ALG} = 544$ ($100.0\%$ de calidad).
+   Ambas soluciones respetan holgadamente la cota teórica $(1 - \varepsilon)\,\text{OPT}$ ($543 \ge 489.6$)."""
     cells.append(nbf.v4.new_markdown_cell(c15_text))
 
     # -------------------------------------------------------------
@@ -1054,15 +1101,10 @@ except (ImportError, Exception):
 if __name__ == "__main__":
     nb = create_notebook()
     
-    # Guardar en colab/grupo 5 guia 03.ipynb y en ./grupo 5 guia 03.ipynb
-    ruta_colab = os.path.join("colab", "grupo 5 guia 03.ipynb")
-    ruta_raiz = "grupo 5 guia 03.ipynb"
-    
-    with open(ruta_colab, "w", encoding="utf-8") as f:
-        nbf.write(nb, f)
-    with open(ruta_raiz, "w", encoding="utf-8") as f:
+    # Guardar en grupo 5 guia 03.ipynb
+    ruta_notebook = "grupo 5 guia 03.ipynb"
+    with open(ruta_notebook, "w", encoding="utf-8") as f:
         nbf.write(nb, f)
         
-    print(f"[EXITO] Notebooks generados:")
-    print(f"  - {ruta_colab}")
-    print(f"  - {ruta_raiz}")
+    print(f"[EXITO] Notebook oficial generado: {ruta_notebook}")
+

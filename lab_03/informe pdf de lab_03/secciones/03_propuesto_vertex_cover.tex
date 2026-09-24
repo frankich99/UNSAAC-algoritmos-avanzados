@@ -58,6 +58,21 @@ Aleatorio\_G12\_p20 & Alea & 12 & 11 & 5 & 4.2 & 8.5 & 1.70 & 2.00 & 0/20 & 0.91
     \end{tabular*}
 \end{table}
 
+\subsubsection*{Consolidado global de aciertos del óptimo sobre los 30 grafos}
+En respuesta a cuántas veces el algoritmo 2-aproximado logra obtener exactamente la solución óptima entre las distintas permutaciones:
+\begin{itemize}
+    \item \textbf{Grafos que alcanzan el óptimo:} De los 30 grafos evaluados, \textbf{4 grafos alcanzaron la solución óptima} en al menos un orden de aristas ($13.3\%$ del banco experimental).
+    \item \textbf{Frecuencia total de aciertos:} Se acumularon \textbf{49 éxitos sobre las 600 ejecuciones} ($8.17\%$ de efectividad global), distribuidos en:
+    \begin{itemize}
+        \item \texttt{Camino\_P4}: 7 aciertos sobre 20 corridas ($35\%$).
+        \item \texttt{Completo\_K5}: 20 aciertos sobre 20 corridas ($100\%$, cobertura óptima invariante por simetría).
+        \item \texttt{Completo\_K7}: 20 aciertos sobre 20 corridas ($100\%$, cobertura óptima invariante por simetría).
+        \item \texttt{Aleatorio\_G9\_p35}: 2 aciertos sobre 20 corridas ($10\%$).
+    \end{itemize}
+    \item \textbf{Grafos sin aciertos óptimos:} En los \textbf{26 grafos restantes}, se registraron \textbf{0 aciertos en las 20 permutaciones} (0/20), debido a que cualquier matching maximal obliga a incorporar 2 vértices por arista disjunta, introduciendo una holgura inherente frente a la cobertura mínima.
+    \item \textbf{Peor razón observada:} En el 100\% de las 600 pruebas se satisfizo la garantía matemática, registrándose como peor razón exactamente $\max r(I) = 2.00$.
+\end{itemize}
+
 \subsection{Respuesta a la pregunta de análisis: efecto del orden de las aristas}
 \textbf{Pregunta de la guía:} \textit{¿El orden de las aristas cambia la cobertura obtenida, su tamaño o ambas propiedades? Explique por qué la garantía 2 permanece válida.}
 
