@@ -1,0 +1,168 @@
+% !TEX root = ../main.tex
+\section{Ejercicio propuesto 2: aproximación de Knapsack mediante escalamiento}
+
+\subsection{Programación Dinámica basada en valores y esquema FPTAS}
+A diferencia de la formulación clásica basada en capacidad $W$, la formulación orientada a valores define $DP(i, v)$ como el peso mínimo necesario para acumular exactamente el valor $v$ utilizando un subconjunto admisible de los primeros $i$ objetos:
+\begin{equation}
+    DP(i, v) = \min \left\{ \sum_{k \in S} w_k \;\middle|\; S \subseteq \{1, \dots, i\}, \ \sum_{k \in S} v_k = v \right\}
+\end{equation}
+Con transición:
+\begin{equation}
+    DP(i, v) = \min\left( DP(i - 1, v), \quad DP(i - 1, v - v_i) + w_i \right)
+\end{equation}
+
+El algoritmo FPTAS procede en 6 pasos estructurados:
+\begin{enumerate}
+    \item \textbf{Filtrado:} Descartar objetos con peso $w_i > W$. Si no queda ningún objeto, retornar solución vacía (cuidado numérico).
+    \item \textbf{Factor de escala:} Calcular $V_{\max} = \max_i v_i$ y $K = \frac{\varepsilon V_{\max}}{n}$.
+    \item \textbf{Discretización:} Escalar los valores mediante $v'_i = \lfloor v_i / K \rfloor$.
+    \item \textbf{DP sobre valores reducidos:} Resolver la tabla dinámica sobre $v'_i$ y pesos $w_i$.
+    \item \textbf{Reconstrucción:} Recuperar los índices de los objetos óptimos de la tabla escalada.
+    \item \textbf{Evaluación real:} Calcular la suma con valores originales $\text{ALG}_\varepsilon = \sum_{i \in S} v_i$ y verificar peso $\le W$.
+\end{enumerate}
+
+\subsection{Código fuente de las implementaciones}
+
+\begin{lstlisting}[language=Python, caption={Programación Dinámica exacta por valores}, label={lst:knap_dp}]
+def knapsack_dp_valores(pesos, valores, W):
+    n = len(pesos)
+    if n == 0 or W <= 0: return 0, 0, [], 0
+    V_sum = sum(valores)
+    if V_sum == 0: return 0, 0, [], 0
+    
+    INF = float('inf')
+    dp = [[INF] * (V_sum + 1) for _ in range(n + 1)]
+    dp[0][0] = 0
+    estados = (n + 1) * (V_sum + 1)
+    
+    for i in range(1, n + 1):
+        w, v = pesos[i - 1], valores[i - 1]
+        for val in range(V_sum + 1):
+            dp[i][val] = dp[i - 1][val]
+            if val >= v and dp[i - 1][val - v] + w < dp[i][val]:
+                dp[i][val] = dp[i - 1][val - v] + w
+                
+    mejor_v = max(val for val in range(V_sum + 1) if dp[n][val] <= W)
+    curr_v = mejor_v
+    seleccion = []
+    for i in range(n, 0, -1):
+        w, v = pesos[i - 1], valores[i - 1]
+        if curr_v >= v and dp[i][curr_v] == dp[i - 1][curr_v - v] + w:
+            seleccion.append(i - 1)
+            curr_v -= v
+    seleccion.reverse()
+    return mejor_v, sum(pesos[i] for i in seleccion), seleccion, estados
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption={Esquema FPTAS por escalamiento}, label={lst:knap_fptas}]
+def knapsack_fptas(pesos_orig, valores_orig, W, epsilon):
+    validos = [(p, v, idx) for idx, (p, v) in enumerate(zip(pesos_orig, valores_orig)) if p <= W]
+    if not validos or W <= 0: return 0, 0, [], 0, 0.0
+    pesos = [item[0] for item in validos]
+    valores = [item[1] for item in validos]
+    indices_orig = [item[2] for item in validos]
+    n = len(pesos)
+    
+    V_max = max(valores)
+    K = (epsilon * V_max) / n
+    v_prime = [int(math.floor(v / K)) for v in valores] if K > 0 else list(valores)
+    
+    mejor_v_prime, _, sel_local, estados = knapsack_dp_valores(pesos, v_prime, W)
+    seleccion_orig = [indices_orig[i] for i in sel_local]
+    valor_real = sum(valores_orig[i] for i in seleccion_orig)
+    peso_real = sum(pesos_orig[i] for i in seleccion_orig)
+    assert peso_real <= W
+    return valor_real, peso_real, seleccion_orig, estados, K
+\end{lstlisting}
+
+\subsection{Resultados experimentales}
+Se evaluaron \textbf{20 instancias pequeñas} bajo cuatro valores de tolerancia $\varepsilon \in \{0.50, 0.25, 0.10, 0.05\}$, acumulando 80 evaluaciones. La Tabla \ref{tab:resumen_knap} presenta una muestra representativa:
+
+\begin{table}[H]
+    \caption{Evaluación experimental de Knapsack FPTAS en instancias representativas}
+    \label{tab:resumen_knap}
+    \centering
+    \scriptsize
+    \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccccccccc}
+        \toprule
+        \textbf{Instancia} & $\mathbf{n}$ & $\mathbf{W}$ & $\mathbf{\varepsilon}$ & \textbf{OPT} & $\mathbf{ALG_\varepsilon}$ & \textbf{Calidad} & \textbf{Cota Teórica} & \textbf{Garantía} & \textbf{Estados} & $\mathbf{T}$ (ms) \\
+        \midrule
+Inst\_01 & 10 & 153 & 0.50 & 566 & 566 & 100.0\% & 283.0 & SI & 1892 & 0.347 \\
+Inst\_01 & 10 & 153 & 0.25 & 566 & 566 & 100.0\% & 424.5 & SI & 3839 & 0.646 \\
+Inst\_01 & 10 & 153 & 0.10 & 566 & 566 & 100.0\% & 509.4 & SI & 9658 & 1.665 \\
+Inst\_01 & 10 & 153 & 0.05 & 566 & 566 & 100.0\% & 537.7 & SI & 19360 & 3.265 \\
+Inst\_07 & 16 & 171 & 0.50 & 451 & 450 & 99.8\% & 225.5 & SI & 7106 & 1.275 \\
+Inst\_07 & 16 & 171 & 0.25 & 451 & 451 & 100.0\% & 338.2 & SI & 14297 & 2.600 \\
+Inst\_07 & 16 & 171 & 0.10 & 451 & 451 & 100.0\% & 405.9 & SI & 35887 & 6.884 \\
+Inst\_07 & 16 & 171 & 0.05 & 451 & 451 & 100.0\% & 428.4 & SI & 71944 & 13.221 \\
+Inst\_10 & 10 & 147 & 0.50 & 226 & 223 & 98.7\% & 113.0 & SI & 1122 & 0.244 \\
+Inst\_10 & 10 & 147 & 0.25 & 226 & 226 & 100.0\% & 169.5 & SI & 2288 & 0.393 \\
+Inst\_10 & 10 & 147 & 0.10 & 226 & 226 & 100.0\% & 203.4 & SI & 5742 & 0.963 \\
+Inst\_10 & 10 & 147 & 0.05 & 226 & 226 & 100.0\% & 214.7 & SI & 11528 & 1.887 \\
+Inst\_12 & 16 & 285 & 0.50 & 639 & 638 & 99.8\% & 319.5 & SI & 5627 & 1.036 \\
+Inst\_12 & 16 & 285 & 0.25 & 639 & 638 & 99.8\% & 479.2 & SI & 11373 & 2.042 \\
+Inst\_12 & 16 & 285 & 0.10 & 639 & 639 & 100.0\% & 575.1 & SI & 28662 & 9.000 \\
+Inst\_12 & 16 & 285 & 0.05 & 639 & 639 & 100.0\% & 607.0 & SI & 57426 & 10.854 \\
+Inst\_16 & 11 & 257 & 0.50 & 544 & 544 & 100.0\% & 272.0 & SI & 1704 & 0.404 \\
+Inst\_16 & 11 & 257 & 0.25 & 544 & 544 & 100.0\% & 408.0 & SI & 3492 & 0.680 \\
+Inst\_16 & 11 & 257 & 0.10 & 544 & 543 & 99.8\% & 489.6 & SI & 8796 & 1.563 \\
+Inst\_16 & 11 & 257 & 0.05 & 544 & 544 & 100.0\% & 516.8 & SI & 17628 & 3.734 \\
+Inst\_19 & 14 & 189 & 0.50 & 469 & 465 & 99.2\% & 234.5 & SI & 4710 & 1.004 \\
+Inst\_19 & 14 & 189 & 0.25 & 469 & 469 & 100.0\% & 351.8 & SI & 9525 & 1.927 \\
+Inst\_19 & 14 & 189 & 0.10 & 469 & 469 & 100.0\% & 422.1 & SI & 23880 & 4.432 \\
+Inst\_19 & 14 & 189 & 0.05 & 469 & 469 & 100.0\% & 445.6 & SI & 47820 & 9.216 \\
+        \bottomrule
+    \end{tabular*}
+\end{table}
+
+\noindent\textbf{Conclusión de la tabla:} En el $100\%$ de las 80 ejecuciones se satisfizo holgadamente la garantía teórica $\text{ALG}_\varepsilon \ge (1 - \varepsilon)\,\text{OPT}$.
+
+\subsection{Respuesta a la pregunta de análisis: calidad vs costo y mesetas}
+\textbf{Pregunta de la guía:} \textit{Explicar por qué reducir $\varepsilon$ normalmente mejora la calidad y aumenta el costo. ¿Pueden existir situaciones donde reducir $\varepsilon$ no mejore la calidad?}
+
+\subsubsection*{1. ¿Por qué mejora la calidad?}
+Al redondear $v'_i = \lfloor v_i / K \rfloor$, se pierde como máximo $K$ de valor por objeto. Para el conjunto óptimo de a lo sumo $n$ elementos, la pérdida máxima es:
+\begin{equation}
+    \text{Pérdida} \le n K = n \cdot \frac{\varepsilon V_{\max}}{n} = \varepsilon V_{\max} \le \varepsilon\,\text{OPT}
+\end{equation}
+Al reducir $\varepsilon$ (por ejemplo de $0.50$ a $0.05$), el margen máximo de error cae del $50\%$ a tan solo $5\%$, obligando a la solución aproximada a converger al óptimo.
+
+\subsubsection*{2. ¿Por qué aumenta el costo computacional?}
+Los valores escalados son $v'_i \le n/\varepsilon$, por lo que la suma de valores escalados es $\sum v'_i \le n^2/\varepsilon$. Las dimensiones de la tabla dinámica son $(n + 1) \times (\sum v'_i + 1)$, de modo que:
+\begin{equation}
+    \text{Estados procesados y Tiempo} \in O\left( \frac{n^3}{\varepsilon} \right)
+\end{equation}
+El costo crece de manera \textbf{estrictamente proporcional a $1/\varepsilon$} (crecimiento lineal en $1/\varepsilon$).
+
+\subsubsection*{3. ¿Cuándo reducir $\varepsilon$ NO mejora la calidad?}
+\begin{itemize}
+    \item \textbf{Mesetas de óptimo prematuro:} En muchas instancias, incluso con $\varepsilon = 0.50$, el orden relativo de los objetos ya reproduce exactamente el óptimo ($\text{ALG}_{0.50} = \text{OPT}$). Reducir $\varepsilon$ a $0.05$ no puede mejorar el valor real ya óptimo, pero sí multiplica el tiempo por diez.
+    \item \textbf{Efecto discreto del piso $\lfloor \cdot \rfloor$:} Pequeños cambios en $K$ pueden alterar empates numéricos en la tabla dinámica, produciendo mesetas locales de calidad.
+\end{itemize}
+
+\subsection{Análisis gráfico de Knapsack FPTAS}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{knap_calidad_vs_epsilon.png}
+        \caption{Calidad empírica observada frente a $\varepsilon$}
+        \label{fig:knap_calidad}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{knap_costo_vs_inv_epsilon.png}
+        \caption{Costo computacional frente a $1/\varepsilon$}
+        \label{fig:knap_costo}
+    \end{subfigure}
+    \caption{Evaluación experimental del esquema FPTAS para Knapsack 0/1}
+    \label{fig:knap_completa}
+\end{figure}
+
+\subsubsection*{Puntos clave para la sustentación}
+\begin{itemize}
+    \item En la Figura \ref{fig:knap_completa} (subfigura \ref{fig:knap_calidad}), la calidad media supera ampliamente la cota teórica $(1 - \varepsilon)$ (línea segmentada roja), manteniéndose por encima del $98\%$ en todo momento.
+    \item En la subfigura \ref{fig:knap_costo}, el tiempo de ejecución sigue una pendiente lineal estricta respecto a $1/\varepsilon$, confirmando la propiedad fundamental de un algoritmo FPTAS.
+\end{itemize}

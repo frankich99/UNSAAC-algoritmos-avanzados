@@ -1,0 +1,42 @@
+% !TEX root = ../main.tex
+\section{Respuestas formales del trabajo preparatorio}
+
+\subsection{Diferencia entre matching maximal y matching máximo}
+En un grafo no dirigido $G = (V, E)$, un \textbf{matching} es un conjunto de aristas disjuntas (ningún par de aristas comparte vértices). La diferencia fundamental radica en el tipo de optimalidad:
+\begin{itemize}
+    \item \textbf{Matching maximal (óptimo local):} Es aquel al que \textbf{no se le puede añadir ninguna otra arista} sin violar la propiedad de disyunción. Se construye vorazmente (greedy) en tiempo lineal $O(|E|)$.
+    \item \textbf{Matching máximo (óptimo global):} Es el matching de \textbf{mayor cardinalidad posible} entre todos los matchings del grafo. Requiere algoritmos más complejos como el algoritmo de Blossom de Edmonds.
+\end{itemize}
+
+\textbf{Ejemplo ilustrativo:} En un camino de 4 vértices $P_4$ con aristas $\{(1,2), (2,3), (3,4)\}$:
+\begin{itemize}
+    \item Si elegimos primero la arista central $(2,3)$, queda bloqueado todo lo demás: es un matching \textbf{maximal} con tamaño $|M_1| = 1$.
+    \item Si elegimos los extremos $\{(1,2), (3,4)\}$, obtenemos un matching \textbf{máximo} con tamaño $|M_2| = 2$.
+\end{itemize}
+Todo matching máximo es maximal, pero no todo maximal es máximo. No obstante, en cualquier grafo se cumple que $|M_{\text{maximal}}| \ge \frac{1}{2} |M_{\text{máximo}}|$.
+
+\subsection{\texorpdfstring{Por qué toda cobertura debe incluir al menos un extremo de cada arista de un matching ($|M| \le \text{OPT}$)}{Por que toda cobertura incluye al menos un extremo de cada arista de un matching}}
+Sea $M \subseteq E$ un matching en $G$, y sea $C$ cualquier cobertura válida de vértices:
+\begin{enumerate}
+    \item Por definición de cobertura, para cada arista $(u, v) \in M$, la cobertura debe contener al menos a $u$ o a $v$.
+    \item Por definición de matching, las aristas de $M$ son mutuamente independientes (no comparten ningún vértice).
+    \item Por tanto, el vértice de $C$ que cubre la arista $e_i \in M$ \textbf{nunca puede servir} para cubrir la arista $e_j \in M$ ($i \neq j$).
+\end{enumerate}
+En consecuencia, toda cobertura válida $C$ requiere al menos un vértice independiente por cada arista de $M$. Si $C^*$ es la cobertura mínima ($\text{OPT} = |C^*|$), se concluye rigurosamente que:
+\begin{equation}
+    \text{OPT} \ge |M|
+\end{equation}
+
+\subsection{\texorpdfstring{Complejidad $n^{1/\varepsilon}$: PTAS frente a FPTAS}{Complejidad n elevado a (1/eps): PTAS frente a FPTAS}}
+\begin{itemize}
+    \item \textbf{Es un PTAS:} Porque si fijamos la tolerancia $\varepsilon > 0$ como una constante, el exponente $k = 1/\varepsilon$ es constante, y la función $O(n^{1/\varepsilon}) = O(n^k)$ es un polinomio en el tamaño de entrada $n$.
+    \item \textbf{NO es un FPTAS:} Porque un FPTAS exige que el tiempo sea polinomial \textbf{simultáneamente en $n$ y en $1/\varepsilon$}, es decir, acotado por $(n + 1/\varepsilon)^c$. En la función $n^{1/\varepsilon} = 2^{(1/\varepsilon) \log_2 n}$, la dependencia respecto a $1/\varepsilon$ es \textbf{exponencial}.
+\end{itemize}
+\noindent\textbf{Impacto práctico:} Para $\varepsilon = 0.01$ ($1/\varepsilon = 100$), el tiempo escala como $O(n^{100})$, lo cual es computacionalmente impracticable.
+
+\subsection{\texorpdfstring{Efecto analítico al disminuir el parámetro $\varepsilon$}{Efecto analitico al disminuir el parametro eps}}
+Al reducir la tolerancia $\varepsilon$ ($\varepsilon \to 0$):
+\begin{enumerate}
+    \item \textbf{Mayor calidad de aproximación:} La solución aproximada se acerca estrictamente al óptimo, cumpliendo $\text{ALG}_\varepsilon \ge (1 - \varepsilon)\,\text{OPT}$. Si pasamos de $\varepsilon = 0.50$ a $\varepsilon = 0.05$, la garantía sube del $50\%$ al $95\%$ del óptimo.
+    \item \textbf{Mayor costo computacional (Trade-off):} El factor de escala $K = \frac{\varepsilon V_{\max}}{n}$ se hace más pequeño, lo que incrementa los valores discretizados $v'_i = \lfloor v_i / K \rfloor$. La tabla de Programación Dinámica crece como $O(n^3/\varepsilon)$, requiriendo más memoria y tiempo.
+\end{enumerate}

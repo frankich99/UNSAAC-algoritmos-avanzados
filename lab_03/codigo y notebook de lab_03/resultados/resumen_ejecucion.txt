@@ -1,0 +1,14 @@
+RESUMEN DE EJECUCIÓN - LABORATORIO 03
+======================================
+Asignatura: ALGORITMOS AVANZADOS - UNSAAC 2026-II
+Docente: Ing. Héctor Eduardo Ugarte Rojas
+Grupo: GRUPO 5
+Integrantes:
+  - Choquenaira Quispe, Noe Franklin (133962)
+  - Porroa Sivana, Yeni Ruth (120893)
+  - Quispe Rimachi, Romario (164257)
+  - Yaranga Achahui, Aldo (103179)
+
+Vertex Cover: 30 grafos x 20 ordenes = 600 ejecuciones aproximadas validadas.
+Knapsack FPTAS: 20 instancias x 4 epsilons = 80 ejecuciones validadas.
+Todas las aserciones de garantías teóricas fueron satisfechas al 100%.

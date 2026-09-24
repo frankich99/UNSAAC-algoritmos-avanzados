@@ -1,0 +1,121 @@
+% !TEX root = ../main.tex
+\section{Ejercicio propuesto 1: evaluación experimental de Vertex Cover}
+
+\subsection{Protocolo experimental y banco de 30 grafos}
+Se implementó un banco sistemático de \textbf{30 grafos pequeños} ($|V| \in [4, 12]$) divididos en cinco familias topológicas:
+\begin{itemize}
+    \item \textbf{Caminos ($P_n$):} 6 grafos lineales ($n \in \{4, 5, 6, 8, 10, 12\}$).
+    \item \textbf{Ciclos ($C_n$):} 6 grafos regulares ($n \in \{4, 5, 6, 8, 10, 12\}$).
+    \item \textbf{Estrellas ($K_{1, k}$):} 5 grafos estrella ($k \in \{4, 6, 8, 10, 12\}$).
+    \item \textbf{Completos ($K_n$):} 5 grafos densos ($n \in \{4, 5, 6, 7, 8\}$).
+    \item \textbf{Aleatorios ($G(n, p)$):} 8 grafos de Erd\H{o}s-R\'enyi (densidades $p \in [0.20, 0.50]$).
+\end{itemize}
+Para cada grafo se calculó la solución óptima exacta y se evaluaron \textbf{20 permutaciones aleatorias distintas de sus aristas} ($30 \times 20 = 600$ corridas independientes).
+
+\subsection{Resultados consolidados}
+La Tabla \ref{tab:resumen_vc} reporta las métricas consolidadas sobre las 600 ejecuciones:
+
+\begin{table}[H]
+    \caption{Resultados consolidados de Vertex Cover sobre 30 grafos (20 órdenes por grafo)}
+    \label{tab:resumen_vc}
+    \centering
+    \scriptsize
+    \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccccccccccc}
+        \toprule
+        \textbf{ID Grafo} & \textbf{Fam.} & $\mathbf{|V|}$ & $\mathbf{|E|}$ & \textbf{OPT} & $\mathbf{|M|_{pr}}$ & $\mathbf{|C|_{pr}}$ & $\mathbf{r_{pr}}$ & \textbf{Peor $r$} & \textbf{Éx. OPT} & $\mathbf{T_{\text{ex}}}$ (ms) & $\mathbf{T_{\text{ap}}}$ (ms) \\
+        \midrule
+Camino\_P4 & Cami & 4 & 3 & 2 & 1.6 & 3.3 & 1.65 & 2.00 & 7/20 & 0.023 & 0.003 \\
+Camino\_P5 & Cami & 5 & 4 & 2 & 2.0 & 4.0 & 2.00 & 2.00 & 0/20 & 0.019 & 0.003 \\
+Camino\_P6 & Cami & 6 & 5 & 3 & 2.5 & 5.1 & 1.70 & 2.00 & 0/20 & 0.035 & 0.003 \\
+Camino\_P8 & Cami & 8 & 7 & 4 & 3.5 & 6.9 & 1.73 & 2.00 & 0/20 & 0.119 & 0.004 \\
+Camino\_P10 & Cami & 10 & 9 & 5 & 4.2 & 8.5 & 1.70 & 2.00 & 0/20 & 0.505 & 0.004 \\
+Camino\_P12 & Cami & 12 & 11 & 6 & 5.0 & 10.0 & 1.67 & 2.00 & 0/20 & 2.197 & 0.005 \\
+Ciclo\_C4 & Cicl & 4 & 4 & 2 & 2.0 & 4.0 & 2.00 & 2.00 & 0/20 & 0.011 & 0.002 \\
+Ciclo\_C5 & Cicl & 5 & 5 & 3 & 2.0 & 4.0 & 1.33 & 1.33 & 0/20 & 0.022 & 0.003 \\
+Ciclo\_C6 & Cicl & 6 & 6 & 3 & 2.8 & 5.5 & 1.83 & 2.00 & 0/20 & 0.031 & 0.003 \\
+Ciclo\_C8 & Cicl & 8 & 8 & 4 & 3.6 & 7.2 & 1.80 & 2.00 & 0/20 & 0.126 & 0.004 \\
+Ciclo\_C10 & Cicl & 10 & 10 & 5 & 4.5 & 8.9 & 1.78 & 2.00 & 0/20 & 0.512 & 0.004 \\
+Ciclo\_C12 & Cicl & 12 & 12 & 6 & 5.3 & 10.6 & 1.77 & 2.00 & 0/20 & 2.235 & 0.006 \\
+Estrella\_K1\_4 & Estr & 5 & 4 & 1 & 1.0 & 2.0 & 2.00 & 2.00 & 0/20 & 0.010 & 0.004 \\
+Estrella\_K1\_6 & Estr & 7 & 6 & 1 & 1.0 & 2.0 & 2.00 & 2.00 & 0/20 & 0.020 & 0.002 \\
+Estrella\_K1\_8 & Estr & 9 & 8 & 1 & 1.0 & 2.0 & 2.00 & 2.00 & 0/20 & 0.007 & 0.003 \\
+Estrella\_K1\_10 & Estr & 11 & 10 & 1 & 1.0 & 2.0 & 2.00 & 2.00 & 0/20 & 0.007 & 0.003 \\
+Estrella\_K1\_12 & Estr & 13 & 12 & 1 & 1.0 & 2.0 & 2.00 & 2.00 & 0/20 & 0.006 & 0.003 \\
+Completo\_K4 & Comp & 4 & 6 & 3 & 2.0 & 4.0 & 1.33 & 1.33 & 0/20 & 0.016 & 0.003 \\
+Completo\_K5 & Comp & 5 & 10 & 4 & 2.0 & 4.0 & 1.00 & 1.00 & 20/20 & 0.034 & 0.003 \\
+Completo\_K6 & Comp & 6 & 15 & 5 & 3.0 & 6.0 & 1.20 & 1.20 & 0/20 & 0.071 & 0.004 \\
+Completo\_K7 & Comp & 7 & 21 & 6 & 3.0 & 6.0 & 1.00 & 1.00 & 20/20 & 0.155 & 0.005 \\
+Completo\_K8 & Comp & 8 & 28 & 7 & 4.0 & 8.0 & 1.14 & 1.14 & 0/20 & 0.337 & 0.006 \\
+Aleatorio\_G6\_p30 & Alea & 6 & 4 & 2 & 2.0 & 4.0 & 2.00 & 2.00 & 0/20 & 0.020 & 0.002 \\
+Aleatorio\_G7\_p40 & Alea & 7 & 6 & 3 & 2.4 & 4.8 & 1.60 & 2.00 & 0/20 & 0.046 & 0.003 \\
+Aleatorio\_G8\_p25 & Alea & 8 & 7 & 3 & 2.9 & 5.7 & 1.90 & 2.00 & 0/20 & 0.050 & 0.003 \\
+Aleatorio\_G8\_p50 & Alea & 8 & 14 & 5 & 3.4 & 6.8 & 1.36 & 1.60 & 0/20 & 0.215 & 0.006 \\
+Aleatorio\_G9\_p35 & Alea & 9 & 9 & 4 & 3.2 & 6.5 & 1.62 & 2.00 & 2/20 & 0.241 & 0.004 \\
+Aleatorio\_G10\_p30 & Alea & 10 & 11 & 4 & 4.0 & 8.0 & 2.00 & 2.00 & 0/20 & 0.222 & 0.004 \\
+Aleatorio\_G11\_p25 & Alea & 11 & 11 & 5 & 4.3 & 8.7 & 1.74 & 2.00 & 0/20 & 0.824 & 0.004 \\
+Aleatorio\_G12\_p20 & Alea & 12 & 11 & 5 & 4.2 & 8.5 & 1.70 & 2.00 & 0/20 & 0.912 & 0.004 \\
+        \bottomrule
+    \end{tabular*}
+\end{table}
+
+\subsection{Respuesta a la pregunta de análisis: efecto del orden de las aristas}
+\textbf{Pregunta de la guía:} \textit{¿El orden de las aristas cambia la cobertura obtenida, su tamaño o ambas propiedades? Explique por qué la garantía 2 permanece válida.}
+
+\subsubsection*{1. Análisis puntual y amigable: ¿Qué cambia según la topología?}
+El orden de llegada de las aristas \textbf{puede cambiar ambas propiedades}, dependiendo de la simetría del grafo:
+\begin{itemize}
+    \item \textbf{Caminos ($P_n$):} Cambian \textbf{ambas propiedades} (los vértices y el tamaño $|C|$). Por ejemplo, en $P_4$:
+    \begin{itemize}
+        \item Si la arista central $(1, 2)$ se evalúa primero, se forma $M = \{(1, 2)\}$ y $|C| = 2 = \text{OPT}$ (razón óptima $1.0$).
+        \item Si las aristas laterales $(0, 1)$ y $(2, 3)$ se leen primero, se toman ambas: $|C| = 4$ frente a $\text{OPT} = 2$ (peor razón $2.0$).
+    \end{itemize}
+    \item \textbf{Estrellas ($K_{1, k}$):} Cambian los \textbf{vértices}, pero \textbf{no el tamaño}. El algoritmo siempre toma una arista incidente al centro, dando siempre $|C| = 2$ (frente a $\text{OPT} = 1$), variando únicamente cuál hoja acompaña al centro.
+    \item \textbf{Ciclos regulares ($C_4$):} Cambia la cobertura pero el tamaño siempre es 4, pues cualquier matching maximal tiene 2 aristas.
+\end{itemize}
+
+\subsubsection*{2. Demostración intuitiva: ¿Por qué la garantía 2 nunca falla?}
+Sin importar el orden en que se presenten las aristas:
+\begin{enumerate}
+    \item El algoritmo voraz siempre construye un \textbf{matching maximal} $M$.
+    \item Toda cobertura válida necesita al menos un vértice por arista de $M$, de modo que $\text{OPT} \ge |M|$.
+    \item Como el algoritmo toma exactamente los 2 vértices de cada arista de $M$:
+    \begin{equation}
+        |C| = 2|M| \le 2\,\text{OPT} \implies \frac{|C|}{\text{OPT}} \le 2
+    \end{equation}
+\end{enumerate}
+En el $100\%$ de las 600 pruebas experimentales la razón cumplió estrictamente $r(I) \le 2.0$.
+
+\subsection{Análisis gráfico de Vertex Cover}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.485\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{vc_razon_familia.png}
+        \caption{Razón $r$ observada por familia}
+        \label{fig:vc_razon}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.485\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{vc_tiempos_comparados.png}
+        \caption{Tiempos comparados (exacto vs. aprox)}
+        \label{fig:vc_tiempos}
+    \end{subfigure}
+    \\[0.35cm]
+    \begin{subfigure}[b]{0.58\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{vc_acierto_densidad.png}
+        \caption{Tasa de acierto del óptimo según densidad}
+        \label{fig:vc_densidad}
+    \end{subfigure}
+    \caption{Evaluación experimental del algoritmo 2-aproximado sobre 30 grafos}
+    \label{fig:vc_completa}
+\end{figure}
+
+\subsubsection*{Interpretación clave para la sustentación}
+\begin{itemize}
+    \item En la Figura \ref{fig:vc_completa} (subfigura \ref{fig:vc_razon}) se evidencia que las familias con peor comportamiento son estrellas y caminos ($r = 2.0$), mientras que grafos densos como completos alcanzan razones cercanas a $1.0$.
+    \item La subfigura \ref{fig:vc_tiempos} refleja la ventaja fundamental: el algoritmo exacto explota exponencialmente ($O(2^{|V|})$), mientras que el 2-aproximado se resuelve en microsegundos ($O(|E|)$).
+    \item La subfigura \ref{fig:vc_densidad} muestra que a mayor densidad de aristas, mayor es la probabilidad de que el matching maximal capture los vértices clave del óptimo.
+\end{itemize}

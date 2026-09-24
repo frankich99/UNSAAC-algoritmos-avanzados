@@ -1,0 +1,10 @@
+% !TEX root = ../main.tex
+\section{Conclusiones grupales}
+
+En la presente práctica de laboratorio se implementaron, validaron y analizaron experimentalmente algoritmos de aproximación avanzados para problemas NP-hard clásicos: el algoritmo 2-aproximado para Minimum Vertex Cover y el esquema de aproximación completamente polinomial (FPTAS) para el problema de la Mochila 0/1 (Knapsack).
+
+Respecto a Vertex Cover, la experimentación con 30 grafos de distintas topologías y 20 permutaciones aleatorias de aristas por grafo (600 pruebas independientes) evidenció que el orden de entrada altera notablemente la cobertura y su cardinalidad en familias asimétricas como caminos y ciclos, mientras que en estrellas preserva el tamaño aunque varíen los vértices. No obstante, la garantía teórica de factor 2 se cumplió estrictamente en el $100\%$ de las instancias ($|C| \le 2\,\text{OPT}$), dado que cualquier orden voraz genera un matching maximal $M$ que acota inferiormente al óptimo ($|M| \le \text{OPT}$). Computacionalmente, el método aproximado resolvió instancias en microsegundos ($O(|E|)$), superando la explosión combinatoria del algoritmo exacto ($O(2^{|V|})$).
+
+En cuanto a Knapsack 0/1, la implementación de la Programación Dinámica exacta por valores y el esquema FPTAS por escalamiento comprobó el compromiso intrínseco entre precisión y costo. Al disminuir $\varepsilon$ de $0.50$ a $0.05$, la calidad promedio mejoró de forma sostenida, respetando siempre la cota analítica $\text{ALG}_\varepsilon \ge (1 - \varepsilon)\,\text{OPT}$. En contrapartida, el volumen de estados y el tiempo de ejecución escalaron linealmente respecto a $1/\varepsilon$ ($O(n^3/\varepsilon)$). Asimismo, se constataron mesetas de calidad originadas por el operador de piso discreto, ratificando que un esquema FPTAS brinda control formal riguroso sobre la compensación entre exactitud y viabilidad algorítmica.
+
+

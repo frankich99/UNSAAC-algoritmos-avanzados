@@ -1,0 +1,122 @@
+% !TEX root = ../main.tex
+\section{Marco teórico y ejercicios resueltos}
+
+\subsection{Definición del problema y garantía analítica de factor 2}
+Dado un grafo no dirigido $G = (V, E)$, una \textbf{cobertura de vértices} es un subconjunto $C \subseteq V$ tal que toda arista $(u, v) \in E$ satisface $u \in C \lor v \in C$. El problema \textit{Minimum Vertex Cover} busca minimizar la cardinalidad $|C|$ y es NP-hard.
+
+El algoritmo voraz construye un matching maximal $M \subseteq E$ y añade ambos extremos de cada arista seleccionada a $C$. Dado que cada arista de $M$ aporta 2 vértices y cualquier cobertura válida requiere al menos un vértice por arista disjunta de $M$:
+\begin{equation}
+    |C| = 2|M| \le 2\,\text{OPT} \implies r(I) = \frac{|C|}{\text{OPT}} \le 2
+\end{equation}
+
+% -------------------------------------------------------------------------
+\subsection{Ejercicio resuelto 1: validación de una cobertura de vértices}
+El primer requisito consiste en verificar si un conjunto propuesto de vértices $C$ constituye una cobertura factible sobre el conjunto original de aristas del grafo.
+
+\begin{lstlisting}[language=Python, caption={Código del Ejercicio Resuelto 1 (función de validación y pruebas)}, label={lst:es_vc}]
+def es_vertex_cover(vertices, aristas, cobertura):
+    cobertura = set(cobertura)
+    if not cobertura.issubset(set(vertices)):
+        return False
+    for u, v in aristas:
+        if u not in cobertura and v not in cobertura:
+            return False
+    return True
+
+# Caso de prueba oficial de la guia: camino de 5 vertices
+vertices = {"a", "b", "c", "d", "e"}
+aristas = [("a", "b"), ("b", "c"), ("c", "d"), ("d", "e")]
+
+print("Prueba 1 ({'b', 'd'}):", es_vertex_cover(vertices, aristas, {"b", "d"}))
+print("Prueba 2 ({'a', 'c'}):", es_vertex_cover(vertices, aristas, {"a", "c"}))
+\end{lstlisting}
+
+\begin{lstlisting}[style=consolestyle, caption={Salida de consola del Ejercicio Resuelto 1}]
+Prueba 1 ({'b', 'd'}): True
+Prueba 2 ({'a', 'c'}): False
+\end{lstlisting}
+
+\subsubsection*{Análisis de resultados y validación}
+\begin{itemize}
+    \item El conjunto $\{b, d\}$ es una cobertura \textbf{válida} (\texttt{True}) porque el vértice $b$ cubre $(a, b)$ y $(b, c)$, mientras que $d$ cubre $(c, d)$ y $(d, e)$.
+    \item El conjunto $\{a, c\}$ es \textbf{inválido} (\texttt{False}) porque la arista $(d, e)$ no tiene ninguno de sus extremos en el conjunto.
+    \item \textbf{Principio de validación:} La comprobación debe efectuarse siempre sobre la lista de aristas originales completas sin descartar las aristas eliminadas durante la ejecución del algoritmo aproximado.
+\end{itemize}
+
+% -------------------------------------------------------------------------
+\subsection{Ejercicio resuelto 2: algoritmo 2-aproximado y matching maximal}
+El algoritmo recorre las aristas del grafo; cuando encuentra una arista cuyos dos extremos están libres, la incorpora al matching $M$ y añade ambos extremos a la cobertura $C$.
+
+\begin{lstlisting}[language=Python, caption={Código del Ejercicio Resuelto 2 (algoritmo aproximado y ejecución)}, label={lst:vc_aprox}]
+def vertex_cover_2_aprox(vertices, aristas):
+    cobertura = set()
+    matching = []
+    for u, v in aristas:
+        if u not in cobertura and v not in cobertura:
+            matching.append((u, v))
+            cobertura.add(u)
+            cobertura.add(v)
+    assert es_vertex_cover(vertices, aristas, cobertura)
+    return cobertura, matching
+
+# Ejecucion sobre el camino de 5 vertices
+cobertura, matching = vertex_cover_2_aprox(vertices, aristas)
+print("Matching maximal M:", matching)
+print("Cobertura C:", sorted(list(cobertura)))
+print("Tamanio |C|:", len(cobertura))
+\end{lstlisting}
+
+\begin{lstlisting}[style=consolestyle, caption={Salida de consola del Ejercicio Resuelto 2}]
+Matching maximal M: [('a', 'b'), ('c', 'd')]
+Cobertura C: ['a', 'b', 'c', 'd']
+Tamanio |C|: 4
+\end{lstlisting}
+
+\subsubsection*{¿Por qué funciona la condición voraz?}
+Una arista $(u, v)$ es seleccionada únicamente si ninguno de sus extremos pertenece a la cobertura en construcción. Como cada arista seleccionada incorpora inmediatamente sus dos extremos a $C$, cualquier arista posterior que comparta un vértice con las anteriores es ignorada. Por ende, las aristas almacenadas en $M$ son mutuamente disjuntas y forman estrictamente un \textbf{matching maximal}.
+
+% -------------------------------------------------------------------------
+\subsection{Ejercicio resuelto 3: búsqueda óptima exacta y razón de aproximación}
+Para contrastar la calidad de la solución aproximada con la cota teórica, se implementa una búsqueda por enumeración exhaustiva de combinaciones para calcular el tamaño óptimo $\text{OPT} = |C^*|$.
+
+\begin{lstlisting}[language=Python, caption={Código del Ejercicio Resuelto 3 (búsqueda óptima y cálculo de razón)}, label={lst:vc_exacto}]
+from itertools import combinations
+
+def vertex_cover_exacto(vertices, aristas):
+    lista = sorted(list(vertices))
+    for k in range(len(lista) + 1):
+        for candidatos in combinations(lista, k):
+            if es_vertex_cover(vertices, aristas, candidatos):
+                return set(candidatos)
+    return set()
+
+# Comparacion experimental de calidad
+optimo = vertex_cover_exacto(vertices, aristas)
+aprox, matching = vertex_cover_2_aprox(vertices, aristas)
+razon = len(aprox) / len(optimo) if optimo else 1.0
+
+print("Optimo exacto C*:", sorted(list(optimo)), "con tamanio OPT =", len(optimo))
+print("Solucion aproximada C:", sorted(list(aprox)), "con tamanio |C| =", len(aprox))
+print(f"Razon observada r(I) = |C| / OPT: {razon:.2f}")
+
+# Comprobacion formal de garantia
+assert len(aprox) <= 2 * len(optimo), "Violacion de garantia teorica"
+print("Garantia |C| <= 2*OPT: SATISFECHA RIGUROSAMENTE")
+\end{lstlisting}
+
+\begin{lstlisting}[style=consolestyle, caption={Salida de consola del Ejercicio Resuelto 3}]
+Optimo exacto C*: ['b', 'd'] con tamanio OPT = 2
+Solucion aproximada C: ['a', 'b', 'c', 'd'] con tamanio |C| = 4
+Razon observada r(I) = |C| / OPT: 2.00
+Garantia |C| <= 2*OPT: SATISFECHA RIGUROSAMENTE
+\end{lstlisting}
+
+\subsubsection*{Análisis de la razón observada y límites de complejidad}
+\begin{itemize}
+    \item Para el grafo camino $P_5$, el óptimo es $C^* = \{b, d\}$ con $|\text{OPT}| = 2$.
+    \item El algoritmo aproximado produjo $|C| = 4$. Por tanto, la razón observada alcanza el peor caso teórico del algoritmo:
+    \begin{equation}
+        r(I) = \frac{|C|}{|\text{OPT}|} = \frac{4}{2} = 2.0
+    \end{equation}
+    \item \textbf{Costo computacional:} La búsqueda exhaustiva evalúa hasta $2^{|V|}$ subconjuntos ($O(2^{|V|} \cdot |E|)$). En contraste, el algoritmo 2-aproximado se ejecuta en tiempo estrictamente lineal $O(|E|)$, haciendo viable la resolución de instancias de gran escala donde el método exacto es intratable.
+\end{itemize}
