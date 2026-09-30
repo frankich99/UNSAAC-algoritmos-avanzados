@@ -1,0 +1,20 @@
+RESUMEN DE EJECUCIÓN - LABORATORIO 04 (UNSAAC)
+====================================================
+Asignatura: ALGORITMOS AVANZADOS - SEMESTRE 2026-II
+Docente: Ing. Héctor Eduardo Ugarte Rojas
+Grupo: GRUPO 5
+Integrantes:
+  - Choquenaira Quispe, Noe Franklin (133962)
+  - Porroa Sivana, Yeni Ruth (120893)
+  - Quispe Rimachi, Romario (164257)
+  - Yaranga Achahui, Aldo (103179)
+
+1. Batería de Pruebas de Invariantes: 100% de aserciones superadas exitosamente.
+2. Escenario A (Operaciones básicas): 4 tamaños de n evaluados con 10 repeticiones cada uno.
+   - Verificación de orden idéntico entre Heapq y Fibonacci: 100% verificado.
+3. Escenario B (Muchas disminuciones): q = 10n disminuciones, 1 extracción cada 20 disminuciones.
+   - Se evidenció acumulación de entradas obsoletas en heapq (hasta más de 12x entradas activas).
+4. Escenario C (Dijkstra): 4 tamaños de V sobre grafos dispersos e intermedios.
+   - Coincidencia exacta de distancias mínimas en todos los nodos y casos especiales.
+5. Hipótesis confirmada: El costo asintótico superior de Fibonacci no supera a la implementación en C
+   de heapq debido al sobrecosto de manipulación de objetos y punteros en Python puro.

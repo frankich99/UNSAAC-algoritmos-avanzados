@@ -1,0 +1,63 @@
+% !TEX root = ../main.tex
+\section{Respuestas formales del trabajo preparatorio}
+
+\subsection{Propiedad de montículo mínimo}
+En una estructura arbórea orientada a mínimo, la \textbf{propiedad de montículo mínimo} (min-heap property) establece que para todo nodo $x$ que posea un nodo padre ($x.\text{parent} \neq \text{None}$):
+\begin{equation}
+    x.\text{parent}.\text{key} \le x.\text{key}
+\end{equation}
+Como consecuencia directa de esta invariante de orden parcial, la clave de cualquier nodo es siempre una cota inferior para todas las claves contenidas en su subárbol descendiente. Por consiguiente, la clave mínima global de cada árbol reside obligatoriamente en su nodo raíz. En un montículo de Fibonacci, que está conformado por un bosque de árboles min-heap, el mínimo global de toda la estructura se localiza en una de las raíces del bosque, permitiendo acceder a él en tiempo $O(1)$ mediante el puntero dedicado \texttt{min\_node}.
+
+\subsection{Costo real, peor caso y costo amortizado}
+En el análisis algorítmico tradicional, el \textbf{costo de peor caso} acota el tiempo que puede requerir una única operación aislada en el escenario más adverso posible. Sin embargo, en estructuras avanzadas como los montículos de Fibonacci, algunas operaciones ocasionales pueden realizar una reestructuración pesada que simplifica drásticamente las operaciones subsecuentes.
+\begin{itemize}
+    \item \textbf{Costo real ($c_i$):} Es el número elemental de operaciones (asignaciones de punteros, enlaces, comparaciones) efectivamente ejecutadas durante la $i$-ésima operación.
+    \item \textbf{Costo de peor caso:} Representa el supremo de $c_i$ sobre cualquier estado admisible. En un \texttt{extract-min}, el costo en el peor caso puede ser $O(n)$ si existen $n$ raíces acumuladas que deben ser consolidadas.
+    \item \textbf{Costo amortizado ($\hat{c}_i$):} Es una compensación contable formal que promedia el costo a lo largo de una secuencia de $m$ operaciones. Mediante el \textbf{método del potencial}, se define:
+    \begin{equation}
+        \hat{c}_i = c_i + \Phi(H_i) - \Phi(H_{i-1})
+    \end{equation}
+    donde $\Phi(H)$ es una función que mide el ``trabajo estructural pendiente'' o desorden de la estructura. Si una operación económica acumula potencial ($\Delta \Phi > 0$), paga por adelantado el costo de una operación futura cara que consumirá dicho potencial ($\Delta \Phi < 0$), logrando que $\sum_{i=1}^m \hat{c}_i \ge \sum_{i=1}^m c_i$ con cotas amortizadas estrictamente acotadas ($O(1)$ o $O(\log n)$).
+\end{itemize}
+
+\subsection{La función potencial \texorpdfstring{$\Phi(H) = t(H) + 2m(H)$}{Phi(H) = t(H) + 2m(H)}}
+La función potencial asignada al montículo de Fibonacci $H$ es:
+\begin{equation}
+    \Phi(H) = t(H) + 2m(H)
+\end{equation}
+donde $t(H)$ representa la cantidad de árboles en la lista de raíces y $m(H)$ la cantidad de nodos internos marcados.
+\begin{enumerate}
+    \item \textbf{El término $t(H)$:} Cada inserción añade una raíz y paga 1 unidad de potencial (+1). Cuando \texttt{extract-min} ejecuta la consolidación por grado, el trabajo de examinar y enlazar $k$ raíces cuesta $O(k)$, pero cada enlace reduce el número de raíces en 1 ($\Delta t = -1$). Así, el potencial acumulado paga exactamente el trabajo de consolidación.
+    \item \textbf{El término $2m(H)$:} Cuando un nodo pierde su primer hijo, se marca (+2 de potencial). Cuando posteriormente pierde un segundo hijo y se produce un corte en cascada, el nodo se corta hacia la raíz (lo que añade 1 árbol, $+1$) y se desmarca (pierde su marca, $-2$). El cambio neto es $1 - 2 = -1$ unidad de potencial. Por ende, las 2 unidades asignadas al marcarse financian completamente tanto el corte futuro del nodo como el incremento de raíces que éste produce.
+\end{enumerate}
+
+\subsection{Procedimiento de consolidación de raíces por grado}
+Tras retirar el nodo mínimo y promover sus hijos a la lista de raíces, pueden coexistir múltiples árboles con el mismo grado. El proceso de consolidación garantiza que, al concluir, \textbf{no existan dos raíces con el mismo grado}:
+\begin{enumerate}
+    \item Se inicializa un arreglo o tabla auxiliar $A$ indexada por grado, inicialmente vacía.
+    \item Se itera sobre cada raíz $w$ presente en la lista circular de raíces.
+    \item Si ya existe en $A[d]$ otra raíz con su mismo grado $d$:
+    \begin{itemize}
+        \item Se comparan sus claves. La raíz de mayor clave se enlaza como hijo de la de menor clave mediante la subrutina \texttt{\_link}.
+        \item Se elimina $A[d]$, se incrementa el grado $d \leftarrow d + 1$ y se repite la verificación por colisiones en el nuevo grado.
+    \end{itemize}
+    \item Se registra la raíz resultante en $A[d]$.
+    \item Finalmente, se reconstruye la lista circular de raíces con las entradas de $A$ y se actualiza \texttt{min\_node}.
+\end{enumerate}
+
+\subsection{Regla de marcas y cortes en cascada}
+Para garantizar que los árboles mantengan tamaños exponenciales en función de su grado ($|T| \ge \phi^{\text{deg}}$), los nodos no pueden perder un número arbitrario de hijos:
+\begin{itemize}
+    \item \textbf{Nodo recién creado o promovido a raíz:} Tiene $\text{mark} = \text{False}$.
+    \item \textbf{Pérdida del primer hijo:} Si un nodo interno pierde un hijo debido a una disminución de clave (\texttt{decrease-key}), su marca pasa a $\text{mark} = \text{True}$.
+    \item \textbf{Pérdida del segundo hijo (Corte en cascada):} Si un nodo marcado pierde otro hijo, se corta inmediatamente de su padre, se inserta en la lista de raíces, se limpia su marca ($\text{mark} = \text{False}$) y la rutina se propaga recursivamente hacia su padre. Si el padre ya estaba marcado, también sufrirá un corte en cascada.
+\end{itemize}
+
+\subsection{Operaciones básicas de heapq y simulación perezosa}
+El módulo estándar \texttt{heapq} de Python implementa un montículo binario mínimo representado implícitamente sobre una lista indexada:
+\begin{itemize}
+    \item \texttt{heappush(heap, item)}: Añade un elemento al final y realiza un \textit{sift-up} en $O(\log n)$.
+    \item \texttt{heappop(heap)}: Extrae la raíz en la posición 0, mueve el último elemento a la raíz y realiza un \textit{sift-down} en $O(\log n)$.
+    \item \texttt{heapify(x)}: Transforma una lista arbitraria en un montículo válido en tiempo lineal $O(n)$.
+\end{itemize}
+\textbf{Disminución de clave perezosa:} Dado que \texttt{heapq} no ofrece acceso por puntero a nodos internos para modificar su prioridad, se emplea la técnica de invalidación perezosa (lazy update): se marca la entrada previa con un centinela (\texttt{REMOVED}) dentro de una tabla hash de entradas activas y se inserta una nueva tupla \texttt{[nueva\_clave, contador, item]} en el montículo. Durante las extracciones, las entradas con centinela en el tope se descartan en amortizado $O(1)$.
