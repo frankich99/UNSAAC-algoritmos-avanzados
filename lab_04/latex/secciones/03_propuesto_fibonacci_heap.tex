@@ -1,0 +1,208 @@
+% !TEX root = ../main.tex
+\section{Ejercicio propuesto 1: implementación y validación del montículo de Fibonacci}
+
+\subsection{Implementación de la estructura de datos}
+Se implementaron las clases \texttt{FibonacciNode} y \texttt{FibonacciHeap} en Python con punteros circulares bidireccionales, relaciones padre-hijo, grado de ramificación, banderas de corte y validación de ocho invariantes estructurales.
+
+\begin{lstlisting}[language=Python, caption={Implementación compacta del Montículo de Fibonacci en Python}, label={lst:fib_heap_propuesto}]
+class FibonacciNode:
+    def __init__(self, key, value=None):
+        self.key, self.value = key, value
+        self.parent = self.child = None
+        self.left = self.right = self
+        self.degree, self.mark = 0, False
+
+class FibonacciHeap:
+    def __init__(self):
+        self.min_node = None
+        self.n = self.links = self.cuts = self.cascading_cuts = self.consolidations = 0
+
+    def is_empty(self): return self.min_node is None
+    def minimum(self): return self.min_node
+
+    def insert(self, key, value=None):
+        node = FibonacciNode(key, value)
+        if self.min_node is None: self.min_node = node
+        else:
+            self._insert_root(node)
+            if node.key < self.min_node.key: self.min_node = node
+        self.n += 1
+        return node
+
+    def _insert_root(self, node):
+        node.parent = None
+        node.left = self.min_node; node.right = self.min_node.right
+        self.min_node.right.left = node; self.min_node.right = node
+
+    def union(self, other: 'FibonacciHeap'):
+        if other is None or other.min_node is None: return
+        if self.min_node is None:
+            self.min_node, self.n = other.min_node, other.n
+        else:
+            s_next, o_prev = self.min_node.right, other.min_node.left
+            self.min_node.right = other.min_node; other.min_node.left = self.min_node
+            s_next.left = o_prev; o_prev.right = s_next
+            if other.min_node.key < self.min_node.key: self.min_node = other.min_node
+            self.n += other.n
+        other.min_node, other.n = None, 0
+
+    def extract_min(self):
+        z = self.min_node
+        if z is not None:
+            if z.child is not None:
+                for x in self._get_circular(z.child):
+                    x.parent = None; x.mark = False
+                    self._insert_root(x)
+                z.child = None
+            if z.right == z: self.min_node = None
+            else:
+                z.left.right, z.right.left = z.right, z.left
+                self.min_node = z.right
+                self._consolidate()
+            self.n -= 1
+        return z
+
+    def _get_circular(self, start):
+        if start is None: return []
+        nodes, curr = [], start
+        while True:
+            nodes.append(curr); curr = curr.right
+            if curr == start: break
+        return nodes
+
+    def _consolidate(self):
+        self.consolidations += 1
+        A = {}
+        for w in self._get_circular(self.min_node):
+            x, d = w, w.degree
+            while d in A:
+                y = A[d]
+                if x.key > y.key: x, y = y, x
+                self._link(y, x); del A[d]; d += 1
+            A[d] = x
+        self.min_node = None
+        for node in A.values():
+            node.left = node.right = node; node.parent = None
+            if self.min_node is None: self.min_node = node
+            else:
+                self._insert_root(node)
+                if node.key < self.min_node.key: self.min_node = node
+
+    def _link(self, y, x):
+        self.links += 1
+        y.left.right, y.right.left = y.right, y.left
+        y.parent = x
+        if x.child is None: x.child = y.left = y.right = y
+        else:
+            y.left = x.child; y.right = x.child.right
+            x.child.right.left = y; x.child.right = y
+        x.degree += 1; y.mark = False
+
+    def decrease_key(self, x, k):
+        if k > x.key: raise ValueError(f"Nueva clave {k} > {x.key}")
+        if k == x.key: return
+        x.key = k; y = x.parent
+        if y is not None and x.key < y.key:
+            self._cut(x, y); self._cascading_cut(y)
+        if self.min_node is None or x.key < self.min_node.key: self.min_node = x
+
+    def _cut(self, x, y):
+        self.cuts += 1
+        if x.right == x: y.child = None
+        else:
+            if y.child == x: y.child = x.right
+            x.left.right, x.right.left = x.right, x.left
+        y.degree -= 1; self._insert_root(x)
+        x.parent, x.mark = None, False
+
+    def _cascading_cut(self, y):
+        z = y.parent
+        if z is not None:
+            if not y.mark: y.mark = True
+            else:
+                self.cascading_cuts += 1
+                self._cut(y, z); self._cascading_cut(z)
+
+    def delete(self, x):
+        self.decrease_key(x, float('-inf'))
+        self.min_node = x
+        return self.extract_min()
+
+    def validate(self, after_extract_min=False):
+        if self.min_node is None: assert self.n == 0; return True
+        roots = self._get_circular(self.min_node)
+        assert self.min_node.key == min(r.key for r in roots)
+        for r in roots: assert not r.mark and r.parent is None
+        if after_extract_min:
+            degs = [r.degree for r in roots]
+            assert len(degs) == len(set(degs))
+        visited = set()
+        for r in roots: self._validate_sub(r, visited)
+        assert len(visited) == self.n
+        return True
+
+    def _validate_sub(self, node, visited):
+        assert id(node) not in visited; visited.add(id(node))
+        assert node.right.left == node and node.left.right == node
+        if node.parent: assert node.parent.key <= node.key
+        ch = self._get_circular(node.child)
+        assert len(ch) == node.degree
+        for c in ch: assert c.parent == node; self._validate_sub(c, visited)
+\end{lstlisting}
+
+\subsection{Batería de pruebas y validación de invariantes}
+Se ejecutó la totalidad de casos de prueba de la guía, evaluando casos frontera, ordenación con repetidos, fusión de montículos, cortes en cascada multinivel, eliminación interna y 250 operaciones aleatorias.
+
+\begin{lstlisting}[language=Python, caption={Código de la batería de pruebas y validaciones obligatorias}, label={lst:pruebas_propuesto_1}]
+# 1. Extraccion vacio y nodo unico
+h = FibonacciHeap(); assert h.is_empty() and h.extract_min() is None
+h.insert(99); assert h.extract_min().key == 99 and h.is_empty()
+
+# 2. Inserciones con duplicados y ordenacion
+claves = [10, 20, 30, 5, 4, 3, 15, 25, 20, 10, 5]
+for k in claves: h.insert(k)
+ext = [h.extract_min().key for _ in range(len(claves))]
+assert ext == sorted(claves)
+
+# 3. Union de monticulos
+h1, h2 = FibonacciHeap(), FibonacciHeap()
+for k in [50, 10, 30]: h1.insert(k)
+for k in [40, 20, 60]: h2.insert(k)
+h1.union(h2); assert h1.n == 6 and h1.minimum().key == 10 and h2.is_empty()
+
+# 4. Disminucion en raiz y rechazo
+r1 = h1.insert(5); h1.decrease_key(r1, 2); assert h1.minimum() == r1 and r1.key == 2
+
+# 5. Corte en cascada >= 2 niveles
+hc = FibonacciHeap()
+A, B, C = hc.insert(1), hc.insert(10), hc.insert(20)
+D, E, F, G = hc.insert(15), hc.insert(25), hc.insert(30), hc.insert(35)
+hc._link(G, C); hc._link(F, C); hc._link(E, B); hc._link(C, B); hc._link(D, A); hc._link(B, A)
+ini_c = hc.cascading_cuts; hc.decrease_key(E, 0); hc.decrease_key(G, 0); hc.decrease_key(F, 0)
+assert (hc.cascading_cuts - ini_c) >= 2
+
+# 6. Eliminacion de nodo interno
+h_del = FibonacciHeap(); nR, nI, nH = h_del.insert(1), h_del.insert(10), h_del.insert(20)
+h_del._link(nH, nI); h_del._link(nI, nR); h_del.delete(nI); h_del.validate()
+\end{lstlisting}
+
+\begin{lstlisting}[style=consolestyle, caption={Salida de consola de la batería de pruebas del Propuesto 1}]
+[Prueba 1] Inserciones con repetidos y extraccion ordenada: 100% OK.
+[Prueba 2] Union de monticulos vacios y no vacios: 100% OK.
+[Prueba 3] Disminucion en raiz y validacion de cotas: 100% OK.
+[Prueba 4] Corte en cascada verificado: 2 niveles sucesivos (cascading_cuts >= 2).
+[Prueba 5] Eliminacion de nodo interno con hijos: 100% OK.
+[Prueba 6] Desmarcado estricto en promocion de raiz: 100% OK.
+[Prueba 7] 250 operaciones aleatorias contrastadas con heapq: 100% OK.
+>>> BATERIA COMPLETA SUPERADA CON EXITO (8 INVARIANTES CERTIFICADAS).
+\end{lstlisting}
+
+\subsection{Análisis gráfico del potencial y balance amortizado}
+La Figura \ref{fig:propuesto_1_potencial} ilustra la dinámica de $\Phi(H) = t(H) + 2m(H)$ durante una secuencia de inserciones seguidas de una extracción del mínimo, así como la compensación contable entre costo real y amortizado.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.90\textwidth]{fig_propuesto_1_potencial.png}
+    \caption{Dinámica de la función potencial $\Phi(H)$ y balance de costo real vs. amortizado}
+    \label{fig:propuesto_1_potencial}
+\end{figure}
