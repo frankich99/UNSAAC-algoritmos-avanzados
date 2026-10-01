@@ -1,4 +1,4 @@
 @echo off
-cd /d "%~dp0informe pdf de lab_04"
+cd /d " %~dp0latex\
 python compilar.py
 pause

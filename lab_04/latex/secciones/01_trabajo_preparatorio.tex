@@ -1,0 +1,26 @@
+% !TEX root = ../main.tex
+\section{Trabajo preparatorio}
+
+\subsection{Propiedad de montículo mínimo}
+Para todo nodo $x$ con padre: $x.\text{parent}.\text{key} \le x.\text{key}$. Esto garantiza que la clave mínima de cada árbol reside en su raíz. En un montículo de Fibonacci, el puntero \texttt{min\_node} apunta a la raíz con menor clave del bosque, accesible en $O(1)$.
+
+\subsection{Costo real, peor caso y costo amortizado}
+\begin{itemize}
+    \item \textbf{Costo real ($c_i$):} operaciones elementales ejecutadas en la $i$-ésima operación.
+    \item \textbf{Peor caso:} cota superior sobre $c_i$ para cualquier estado. En \texttt{extract-min} puede ser $O(n)$.
+    \item \textbf{Amortizado ($\hat{c}_i$):} mediante el método del potencial:
+    $\hat{c}_i = c_i + \Phi(H_i) - \Phi(H_{i-1})$.
+    Garantiza $\sum c_i \le \sum \hat{c}_i$, distribuyendo el costo de operaciones costosas entre las baratas.
+\end{itemize}
+
+\subsection{Función potencial \texorpdfstring{$\Phi(H) = t(H) + 2m(H)$}{Phi(H) = t(H) + 2m(H)}}
+$\Phi(H) = t(H) + 2m(H)$, donde $t(H)$ es el número de árboles en la lista de raíces y $m(H)$ los nodos marcados. Cada inserción aporta $+1$ de potencial que financia la consolidación futura. Cada marca aporta $+2$; al cortarse en cascada el nodo se desmarca ($-2$) y pasa a raíz ($+1$), con cambio neto $-1$.
+
+\subsection{Consolidación de raíces por grado}
+Tras extraer el mínimo y promover sus hijos, se recorre la lista de raíces con una tabla auxiliar indexada por grado. Si dos raíces coinciden en grado $d$, la de mayor clave se enlaza como hija de la menor (grado pasa a $d+1$). Al finalizar, no existen dos raíces con el mismo grado.
+
+\subsection{Regla de marcas y cortes en cascada}
+Un nodo interno se marca ($\text{mark} = \text{True}$) la primera vez que pierde un hijo. Si pierde un segundo hijo, se corta de su padre, se desmarca y pasa a la lista de raíces. El corte se propaga recursivamente hacia arriba mientras el ancestro esté marcado.
+
+\subsection{Operaciones de heapq y actualización perezosa}
+\texttt{heapq} implementa un min-heap binario sobre una lista de Python con \texttt{heappush} y \texttt{heappop} en $O(\log n)$. No soporta \texttt{decrease-key} nativo; se simula con invalidación perezosa: se marca la entrada anterior con un centinela \texttt{REMOVED} y se inserta una nueva tupla. Las entradas obsoletas se descartan al llegar al tope durante las extracciones.

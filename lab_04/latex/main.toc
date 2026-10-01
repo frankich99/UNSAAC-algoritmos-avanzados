@@ -1,0 +1,24 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {section}{\numberline {1}Trabajo preparatorio}{1}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Propiedad de montículo mínimo}{1}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Costo real, peor caso y costo amortizado}{1}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Función potencial $\Phi (H) = t(H) + 2m(H)$}{1}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.4}Consolidación de raíces por grado}{1}{subsection.1.4}%
+\contentsline {subsection}{\numberline {1.5}Regla de marcas y cortes en cascada}{1}{subsection.1.5}%
+\contentsline {subsection}{\numberline {1.6}Operaciones de heapq y actualización perezosa}{2}{subsection.1.6}%
+\contentsline {section}{\numberline {2}Marco teórico y ejercicios resueltos}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Comparativa formal de complejidades teóricas}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Ejercicio resuelto 1: instrumentación de la función potencial}{2}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Ejercicio resuelto 2: consolidación programada por grados}{3}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Ejercicio resuelto 3: simulación de decrease-key con heapq}{3}{subsection.2.4}%
+\contentsline {section}{\numberline {3}Ejercicio propuesto 1: implementación y validación del montículo de Fibonacci}{4}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Implementación de la estructura de datos}{4}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Batería de pruebas y validación de invariantes}{6}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Análisis gráfico del potencial y balance amortizado}{7}{subsection.3.3}%
+\contentsline {section}{\numberline {4}Ejercicio propuesto 2: comparación con heapq y aplicación en Dijkstra}{7}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Entorno experimental y especificaciones del hardware}{7}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Escenario A: operaciones básicas de inserción y extracción}{8}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Escenario B: carga intensiva de disminuciones de clave}{9}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Escenario C: algoritmo de Dijkstra en grafos sintéticos}{10}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Respuestas a las preguntas de análisis de la guía}{11}{subsection.4.5}%
+\contentsline {section}{\numberline {5}Conclusiones}{12}{section.5}%
