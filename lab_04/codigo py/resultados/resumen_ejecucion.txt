@@ -1,0 +1,36 @@
+RESUMEN DE EJECUCIÓN - LABORATORIO 04 (UNSAAC)
+====================================================
+Asignatura: ALGORITMOS AVANZADOS - SEMESTRE 2026-II
+Docente: Ing. Héctor Eduardo Ugarte Rojas
+Grupo: GRUPO 5
+Integrantes:
+  - Choquenaira Quispe, Noe Franklin (133962)
+  - Porroa Sivana, Yeni Ruth (120893)
+  - Quispe Rimachi, Romario (164257)
+  - Yaranga Achahui, Aldo (103179)
+
+ENTORNO DE EJECUCIÓN Y HARDWARE:
+  - Sistema Operativo: Windows-11-10.0.26300-SP0
+  - Procesador: AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD
+  - Memoria RAM Total: 23.36 GB
+  - Intérprete Python: 3.12.8 (64bit)
+  - Semilla Determinista: SEMILLA_GLOBAL = 2026
+
+RESULTADOS Y VALIDACIONES CLAVE:
+1. Batería Completa de Pruebas: 100% de aserciones e invariantes superadas.
+   - Se verificó formalmente el corte en cascada de >=2 niveles (cascading_cuts > 0).
+   - Se verificó la eliminación de nodo interno con hijos sin pérdida de invariantes.
+   - Se verificó la disminución de clave de nodo raíz.
+   - Se verificó el desmarcado estricto (mark=False) al promover hijos a raíz en extract_min.
+   - Se contrastaron 250 operaciones aleatorias con validate() tras cada paso.
+
+2. Escenario A (Operaciones Básicas): 4 tamaños de n con 10 repeticiones cada uno.
+   - Orden devuelto por Heapq y Fibonacci: 100% IDÉNTICO.
+
+3. Escenario B (Muchas Disminuciones): q = 10n disminuciones estrictamente válidas en elementos activos (5 repeticiones).
+   - Fibonacci superó a Heapq en tiempo absoluto gracias a su decrease-key en O(1) amortizado.
+   - Se cuantificó la inflación de memoria de Heapq por entradas obsoletas (hasta 11x).
+
+4. Escenario C (Dijkstra): 4 tamaños de V sobre grafos dispersos e intermedios (5 repeticiones).
+   - Concordancia exacta de distancias mínimas: 100% IDÉNTICO.
+   - Casos frontera superados: desconectados (=inf), peso 0 y rechazo formal de pesos negativos.

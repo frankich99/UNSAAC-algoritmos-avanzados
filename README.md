@@ -23,16 +23,16 @@ Este repositorio contiene el desarrollo completo, experimental y riguroso de las
 Cada laboratorio incluye:
 * 📄 **Guías oficiales e informes técnicos:** Documentos formales en PDF generados con tipografía APA 7, índices interactivos completos (TOC, LOF, LOT y marcadores PDF) y paquetes compatibles con Overleaf.
 * 🐍 **Implementaciones en Python desacopladas:** Código estructurado, tipado y modular listo para ejecución local o en la nube.
-* 📓 **Notebooks interactivos reproducible:** Cuadernos `.ipynb` ejecutables en JupyterLab, VS Code y Google Colab.
-* 🧪 **Baterías experimentales y casos límite:** Verificación rigurosa de cotas matemáticas, razones de aproximación y garantías teóricas.
-* 📊 **Evidencia empírica respaldada:** Gráficos estadísticos vectoriales/alta resolución y tablas de resultados en formato CSV.
+* 📓 **Notebooks interactivos reproducibles:** Cuadernos `.ipynb` ejecutables en JupyterLab, VS Code y Google Colab.
+* 🧪 **Baterías experimentales y casos límite:** Verificación rigurosa de cotas matemáticas, razones de aproximación, invariantes y garantías teóricas.
+* 📊 **Evidencia empírica respaldada:** Gráficos estadísticos en alta resolución y tablas de resultados en formato CSV.
 
 ---
 
 ## 👥 Integrantes del Equipo (Grupo 5)
 
 | N.° | Apellidos y Nombres | Código | Correo Institucional |
-| :---: | :--- | :---: | :--- |
+| :---: | :--- | :--- | :--- |
 | 1 | Choquenaira Quispe, Noe Franklin | 133962 | `133962@unsaac.edu.pe` |
 | 2 | Porroa Sivana, Yeni Ruth | 120893 | `120893@unsaac.edu.pe` |
 | 3 | Quispe Rimachi, Romario | 164257 | `164257@unsaac.edu.pe` |
@@ -47,6 +47,7 @@ Cada laboratorio incluye:
 | **Lab 01** | Complejidad y Análisis Empírico | Búsquedas, ordenamientos, Subset Sum recursivo vs. poda | Análisis asintótico y tiempos reales |
 | **Lab 02** | Scheduling en Máquinas Paralelas ($Pm \parallel C_{\max}$) | List Scheduling (LS), Longest Processing Time (LPT), Branch & Bound exacto | Cota de Graham: $r \le 2 - \frac{1}{m}$ (LS) y $r \le \frac{4}{3} - \frac{1}{3m}$ (LPT) |
 | **Lab 03** | Aproximación Avanzada: Vertex Cover y FPTAS | Algoritmo 2-Aproximado por Matching Maximal, DP por Valores, Knapsack FPTAS con escalamiento $K = \frac{\varepsilon V_{\max}}{n}$ | Vertex Cover: $|C| \le 2\,\text{OPT}$<br>FPTAS: $\text{ALG}_\varepsilon \ge (1-\varepsilon)\,\text{OPT}$, $O(n^3/\varepsilon)$ |
+| **Lab 04** | Montículos de Fibonacci y Análisis Amortizado | Montículo de Fibonacci con punteros circulares, consolidación por grados, cortes en cascada, `heapq` perezoso y Dijkstra | Potencial: $\Phi(H) = t(H) + 2m(H)$<br>`insert`: $O(1)$, `decrease-key`: $O(1)$, `extract-min`: $O(\log n)$<br>Dijkstra: $O(|E| + |V|\log |V|)$ |
 
 ---
 
@@ -64,7 +65,7 @@ UNSAAC-algoritmos-avanzados/
 │   ├── ejecutar_todo.bat                       # Ejecución directa en Windows (Batch)
 │   ├── resuelto_*.py                           # Ejercicios resueltos (Crecimiento, Búsquedas, Subset Sum)
 │   ├── propuesto_*.py                          # Ejercicios propuestos (Ordenamientos, Límite exponencial)
-│   ├── *.png                                   # 6 figuras generadas automáticamente
+│   ├── *.png                                   # Figuras generadas automáticamente
 │   └── *.csv / *.json                          # Resultados experimentales exportados
 │
 ├── lab_02/                                     # Laboratorio 02: Scheduling en Máquinas Paralelas (Pm || Cmax)
@@ -78,8 +79,8 @@ UNSAAC-algoritmos-avanzados/
 │       ├── 01 a 03 (algoritmos)                # List Scheduling, LPT, Branch & Bound
 │       ├── 04_pruebas_factibilidad.py          # Suite de pruebas unitarias y casos límite (300 instancias)
 │       ├── 05 a 14 (experimentos)              # Complejidad, cotas de Graham, escalabilidad y dominancia
-│       ├── figuras/                            # 5 gráficos en alta resolución
-│       └── resultados/                         # 10 archivos CSV con métricas empíricas + instancias.json
+│       ├── figuras/                            # Gráficos en alta resolución
+│       └── resultados/                         # Archivos CSV con métricas empíricas + instancias.json
 │
 ├── lab_03/                                     # Laboratorio 03: Vertex Cover, PTAS y FPTAS
 │   ├── Guia 03.pdf                             # Guía oficial del laboratorio
@@ -91,33 +92,48 @@ UNSAAC-algoritmos-avanzados/
 │   │   ├── generate_lab03_notebook.py          # Generador y ejecutor de la suite experimental completa
 │   │   ├── README.md                           # Documentación de la suite de código
 │   │   ├── resultados_lab03.zip                # Respaldo completo de resultados
-│   │   ├── figuras/                            # 5 figuras individuales y 2 paneles consolidados
-│   │   │   ├── vc_razon_familia.png            # Distribución de la razón r(I) por familia de grafo
-│   │   │   ├── vc_tiempos_comparados.png       # Tiempos exacto O(2^|V|) vs 2-aprox O(|E|)
-│   │   │   ├── vc_acierto_densidad.png         # Tasa de acierto del óptimo según densidad
-│   │   │   ├── knap_calidad_vs_epsilon.png     # Calidad observada frente a cota teórica (1 - ε)
-│   │   │   ├── knap_costo_vs_inv_epsilon.png   # Costo computacional vs 1/ε (lineal en 1/ε)
-│   │   │   ├── evaluacion_vertex_cover.png     # Panel consolidado Vertex Cover
-│   │   │   └── evaluacion_knapsack_fptas.png   # Panel consolidado Knapsack FPTAS
-│   │   └── resultados/                         # Datasets de salida
-│   │       ├── tabla_vertex_cover.csv          # 30 grafos x 20 permutaciones (600 corridas)
-│   │       ├── tabla_knapsack_fptas.csv        # 20 instancias x 4 valores de ε (80 corridas)
-│   │       └── resumen_ejecucion.txt           # Resumen cuantitativo de ejecución
+│   │   ├── figuras/                            # Figuras individuales y paneles consolidados
+│   │   └── resultados/                         # Datasets de salida (CSV y resumen)
 │   │
 │   └── informe pdf de lab_03/                  # Informe académico formal en LaTeX (APA 7)
 │       ├── main.tex                            # Archivo maestro central
-│       ├── main.pdf                            # Documento PDF único y definitivo (17 páginas)
-│       ├── informe_overleaf.zip                # Paquete modular listo para compilar en Overleaf
-│       ├── compilar.bat / compilar.py          # Script de compilación multi-pasada sin '??'
+│       ├── main.pdf                            # Documento PDF único y definitivo
+│       ├── informe_overleaf.zip                # Paquete modular listo para Overleaf
+│       ├── compilar.bat / compilar.py          # Script de compilación multi-pasada
 │       ├── iniciar_modo_en_vivo.bat            # Auto-compilación continua
 │       ├── figuras/                            # Gráficos y escudo institucional de la UNSAAC
 │       └── secciones/                          # Estructura modular correlativa
-│           ├── 00_portada.tex                  # Carátula oficial con datos del Grupo 5
-│           ├── 01_trabajo_preparatorio.tex     # Preguntas preparatorias (5.a a 5.d)
-│           ├── 02_ejercicios_resueltos.tex     # Ejercicios resueltos (1, 2, 3) con código y consola
-│           ├── 03_propuesto_vertex_cover.tex   # Evaluación de 30 grafos y análisis de orden
-│           ├── 04_propuesto_knapsack_fptas.tex # Algoritmo FPTAS, trade-off y mesetas de calidad
-│           └── 05_conclusiones.tex             # Conclusiones grupales
+│
+├── lab_04/                                     # Laboratorio 04: Montículos de Fibonacci y Análisis Amortizado
+│   ├── Guia 04.pdf                             # Guía oficial del laboratorio
+│   ├── compilar_informe.bat                    # Compilador directo del informe PDF
+│   ├── modo_en_vivo.bat                        # Compilador en tiempo real con recarga continua
+│   │
+│   ├── colab/                                  # Entorno para Google Colab y Jupyter
+│   │   ├── grupo 5 guia 04.ipynb               # Cuaderno interactivo con salidas incrustadas
+│   │   ├── README.md                           # Guía de ejecución en la nube
+│   │   └── resultados_lab04.zip                # Paquete de evidencias y tablas
+│   │
+│   ├── codigo py/                              # Scripts en Python puro modulares
+│   │   ├── resuelto_01_potencial.py            # Ejercicio Resuelto 1: Potencial y costo amortizado
+│   │   ├── resuelto_02_consolidacion.py        # Ejercicio Resuelto 2: Consolidación por grado
+│   │   ├── resuelto_03_heapq_perezoso.py       # Ejercicio Resuelto 3: Cola de prioridad heapq perezosa
+│   │   ├── propuesto_01_fibonacci_heap.py      # Ejercicio Propuesto 1: FibonacciHeap, 8 invariantes y 7 pruebas
+│   │   ├── propuesto_02_comparacion_dijkstra.py# Ejercicio Propuesto 2: Benchmarks A, B, C y Dijkstra
+│   │   ├── ejecutar_todo.py                    # Ejecutor maestro de todos los ejercicios
+│   │   ├── ejecutar_todos.bat                  # Lanzador batch para Windows
+│   │   ├── generate_lab04_notebook.py          # Generador del cuaderno Jupyter
+│   │   ├── figuras/                            # 5 gráficos generados en 300 DPI
+│   │   └── resultados/                         # Tablas CSV de resultados y métricas
+│   │
+│   └── latex/                                  # Informe académico en LaTeX (APA 7)
+│       ├── main.tex                            # Documento maestro
+│       ├── main.pdf                            # PDF compilado final
+│       ├── compilar.py / compilar.bat          # Compilador automatizado 2-pass
+│       ├── watch_live.py / iniciar_*.bat       # Modo en vivo con debounce
+│       ├── informe_overleaf.zip                # Paquete comprimido para Overleaf
+│       ├── figuras/                            # Gráficos y escudo institucional
+│       └── secciones/                          # Secciones del informe (00 a 05)
 │
 ├── .gitignore                                  # Exclusión de temporales y compilados
 ├── requirements.txt                            # Dependencias necesarias
@@ -136,67 +152,65 @@ UNSAAC-algoritmos-avanzados/
 
 2. **Requisitos de Python:**
    * Python 3.10 o superior.
-   * Instalar las dependencias necesarias:
+   * Instalar dependencias:
      ```bash
      pip install -r requirements.txt
      ```
 
-3. **Requisitos para compilar el informe LaTeX (opcional):**
+3. **Requisitos para compilar informes LaTeX (opcional):**
    * Distribución TeX (MiKTeX o TeX Live) con `pdflatex`.
-   * Alternativamente, se puede subir [informe_overleaf.zip](lab_03/informe%20pdf%20de%20lab_03/informe_overleaf.zip) directamente a [Overleaf](https://www.overleaf.com).
+   * Alternativamente, subir los archivos `informe_overleaf.zip` directamente a [Overleaf](https://www.overleaf.com).
 
 ---
 
-## ⚡ Ejecución Rápida
+## ⚡ Ejecución Rápida por Laboratorio
 
 ### Laboratorio 01: Complejidad Empírica
 ```bash
 cd lab_01
 python ejecutar_todo.py
 ```
-*(En Windows también se puede hacer doble clic en `ejecutar_todo.bat`)*
 
 ### Laboratorio 02: Scheduling en Máquinas Paralelas
 ```bash
 cd "lab_02/codigo py"
 python ejecutar_todo.py
-```
-Para ejecutar la batería de pruebas de factibilidad y casos límite:
-```bash
 python 04_pruebas_factibilidad.py
 ```
 
 ### Laboratorio 03: Vertex Cover, PTAS y FPTAS
-
-#### 1. Ejecución de los experimentos y regeneración de resultados
 ```bash
 cd "lab_03/codigo y notebook de lab_03"
 python generate_lab03_notebook.py
 ```
-O abrir interactivamente el cuaderno `grupo 5 guia 03.ipynb` en JupyterLab, VS Code o Google Colab.
+* **Compilar informe PDF:** Doble clic en `lab_03/compilar_informe.bat`.
 
-#### 2. Visualización y compilación del informe en PDF
-* **Compilación directa (1 clic):** Doble clic en `lab_03/compilar_informe.bat`.
-* **Modo en vivo (tiempo real):** Doble clic en `lab_03/modo_en_vivo.bat`. Cada vez que guardes cambios (`Ctrl + S`), el PDF se actualizará automáticamente en menos de un segundo con índices y referencias completamente resueltos.
-* **Desde VS Code:** Abrir `main.tex` o cualquier sección en `secciones/` y presionar `Ctrl + S`. La receta de doble pasada automática actualizará `main.pdf`.
-
-#### 3. Sincronización con GitHub
-Para enviar todos los avances confirmados a tu repositorio remoto:
+### Laboratorio 04: Montículos de Fibonacci y Análisis Amortizado
 ```bash
-git push origin main
+cd "lab_04/codigo py"
+python ejecutar_todo.py
 ```
+* **Ejecución modular de ejercicios:**
+  ```bash
+  python resuelto_01_potencial.py
+  python resuelto_02_consolidacion.py
+  python resuelto_03_heapq_perezoso.py
+  python propuesto_01_fibonacci_heap.py
+  python propuesto_02_comparacion_dijkstra.py
+  ```
+* **Compilar informe PDF:** Doble clic en `lab_04/compilar_informe.bat` o `lab_04/modo_en_vivo.bat`.
 
 ---
 
-## 🔬 Aspectos Teóricos Clave Evaluados en Lab 03
+## 🔬 Aspectos Teóricos Clave Evaluados en Lab 04
 
-### 1. Minimum Vertex Cover (Algoritmo 2-Aproximado)
-* **Principio del Matching Maximal:** El algoritmo selecciona codiciosamente aristas disjuntas incorporando ambos extremos a la cobertura $C$.
-* **Cota Teórica:** Toda cobertura válida requiere al menos un vértice por arista independiente de un matching $M$. Por ende:
-  $$\text{OPT} \ge |M| \implies |C| = 2|M| \le 2\,\text{OPT} \implies r(I) \le 2$$
-* **Impacto del orden de aristas:** En caminos y ciclos altera la cardinalidad y los vértices elegidos; en estrellas altera únicamente la hoja seleccionada preservando el tamaño. En las 600 pruebas experimentales la garantía $r(I) \le 2.0$ se satisfizo al 100%.
+### 1. Función de Potencial y Análisis Amortizado
+* **Función de Potencial Contable:** Definida como $\Phi(H) = t(H) + 2m(H)$, donde $t(H)$ es el número de árboles en la lista de raíces y $m(H)$ la cantidad de nodos internos marcados.
+* **Compensación de Reestructuraciones:** Cada inserción aporta $+1$ de potencial que amortiza los enlaces durante la consolidación de `extract-min`. Cada nodo marcado acumula $+2$, financiando su corte futuro y desmarcado cuando sufre un corte en cascada ($\Delta \Phi = -1$).
+* **Cotas Garantizadas:**
+  $$\hat{c}_{\text{insert}} \in O(1), \quad \hat{c}_{\text{union}} \in O(1), \quad \hat{c}_{\text{decrease-key}} \in O(1), \quad \hat{c}_{\text{extract-min}} \in O(\log n)$$
 
-### 2. Knapsack 0/1 mediante Escalamiento (FPTAS)
-* **Programación Dinámica por Valores:** Estado $DP(i, v)$ definido como el peso mínimo para alcanzar exactamente el valor $v$ con objetos $\{1, \dots, i\}$.
-* **Discretización:** Con factor $K = \frac{\varepsilon V_{\max}}{n}$, los valores escalados $v'_i = \lfloor v_i / K \rfloor$ acotan la tabla a $O(n^3/\varepsilon)$.
-* **Garantía Teórica:** $\text{ALG}_\varepsilon \ge (1 - \varepsilon)\,\text{OPT}$. En las 80 evaluaciones experimentales sobre 20 instancias, la calidad empírica se mantuvo por encima del 98%, confirmando la convergencia al óptimo y el crecimiento lineal del costo respecto a $1/\varepsilon$.
+### 2. Comparación Empírica frente a `heapq` y Algoritmo de Dijkstra
+* **Locality vs. Asintótica:** Para operaciones estándar de inserción y extracción, `heapq` supera a Fibonacci debido a su implementación en lenguaje C optimizado sobre memoria contigua.
+* **Ventaja en Disminuciones Intensivas ($q = 10n$):** Fibonacci demostró ser más rápido que `heapq` (2\,721 ms vs. 3\,307 ms para 200\,000 disminuciones) gracias a su cota $O(1)$, mientras que `heapq` sufrió una degradación temporal y espacial al inflar su tamaño físico en un factor de $15\times$ (148\,731 entradas físicas frente a 10\,000 activas) debido a la acumulación de entradas obsoletas (`REMOVED`).
+* **Dijkstra en Grafos Densos:** Fibonacci calcula distancias 100% idénticas a `heapq`, reduciendo asintóticamente el tiempo de Dijkstra de $O(|E|\log |V|)$ a $O(|E| + |V|\log |V|)$.

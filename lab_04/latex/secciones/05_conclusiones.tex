@@ -1,0 +1,8 @@
+% !TEX root = ../main.tex
+\section{Conclusiones}
+
+Implementamos el montículo de Fibonacci en Python y analizamos su comportamiento amortizado mediante la función de potencial $\Phi(H) = t(H) + 2m(H)$, contrastando su desempeño frente al módulo estándar \texttt{heapq} en operaciones básicas, disminuciones intensivas y el algoritmo de Dijkstra.
+
+La batería de pruebas automáticas verificó el cumplimiento de las ocho invariantes estructurales: orden de montículo, consistencia en listas circulares, desmarcado estricto en raíces y grados disjuntos tras consolidar. Comprobamos que el costo amortizado $O(1)$ en inserción y disminución de clave permite acumular potencial suficiente para financiar las reestructuraciones profundas y cortes en cascada durante la extracción del mínimo en $O(\log n)$.
+
+En el plano experimental, \texttt{heapq} fue sustancialmente más rápido en inserción y extracción ordinarias gracias a su implementación en lenguaje C sobre memoria contigua. Sin embargo, en el escenario de disminuciones intensivas ($q = 10n$), el montículo de Fibonacci superó a \texttt{heapq} en tiempo total (2\,721 ms frente a 3\,307 ms para 200\,000 disminuciones), ya que \texttt{heapq} sufrió una degradación por acumulación de entradas obsoletas (alcanzando 148\,731 entradas físicas frente a 10\,000 activas). En Dijkstra ambas estructuras calcularon distancias mínimas idénticas en todas las instancias. Concluimos que el montículo de Fibonacci ofrece una ventaja clara en cargas dominadas por disminuciones de clave, aunque en entornos interpretados como Python la sobrecarga de punteros contrarresta parte de su beneficio asintótico frente a bibliotecas compiladas.
