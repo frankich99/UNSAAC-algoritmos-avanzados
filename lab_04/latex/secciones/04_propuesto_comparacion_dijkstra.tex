@@ -1,0 +1,223 @@
+% !TEX root = ../main.tex
+\section{Ejercicio propuesto 2: comparación con heapq y aplicación en Dijkstra}
+
+\subsection{Entorno experimental y especificaciones del hardware}
+Siguiendo las pautas metodológicas de la guía, las evaluaciones se llevaron a cabo en un entorno controlado con las siguientes características técnicas:
+\begin{itemize}
+    \item \textbf{Sistema Operativo:} Windows 11 Pro de 64 bits (build 10.0.26300).
+    \item \textbf{Procesador:} AMD64 Family 25 Model 80 Stepping 0 (Arquitectura x86\_64).
+    \item \textbf{Memoria RAM Total:} 23.36 GB DDR4.
+    \item \textbf{Entorno de Ejecución:} Python 3.12.8 estándar (CPython 64 bits).
+    \item \textbf{Aislamiento y Reproducibilidad:} La inicialización se aisló fuera de los bloques medidos con \texttt{time.perf\_counter\_ns}. La constante $\texttt{SEMILLA\_GLOBAL} = 2026$ asegura la reproducción idéntica de las entradas, grafos y secuencias operativas.
+\end{itemize}
+
+% -------------------------------------------------------------------------
+\subsection{Escenario A: operaciones básicas de inserción y extracción}
+Se evaluaron secuencias de $n \in \{1\,000, 5\,000, 10\,000, 25\,000\}$ elementos mediante 10 repeticiones independientes por tamaño.
+
+\begin{lstlisting}[language=Python, caption={Código del benchmark para el Escenario A (10 repeticiones)}, label={lst:escenario_a_code}]
+for n in [1000, 5000, 10000, 25000]:
+    claves = [rng.randint(1, 10**8) for _ in range(n)]
+    # Heapq
+    pq = HeapqPriorityQueue(); t0 = time.perf_counter_ns()
+    for idx, k in enumerate(claves): pq.insert(idx, k)
+    t_ins_h = (time.perf_counter_ns() - t0) / 1e6; t0 = time.perf_counter_ns()
+    while not pq.is_empty(): pq.extract_min()
+    t_ext_h = (time.perf_counter_ns() - t0) / 1e6
+    # Fibonacci Heap
+    fib = FibonacciHeap(); t0 = time.perf_counter_ns()
+    for idx, k in enumerate(claves): fib.insert(k, idx)
+    t_ins_f = (time.perf_counter_ns() - t0) / 1e6; t0 = time.perf_counter_ns()
+    while not fib.is_empty(): fib.extract_min()
+    t_ext_f = (time.perf_counter_ns() - t0) / 1e6
+\end{lstlisting}
+
+\begin{lstlisting}[style=consolestyle, caption={Salida de consola del Escenario A (10 repeticiones, tiempos en ms)}]
+n      | Heapq Ins [Min-Max] Ext [Min-Max] | Fib Ins [Min-Max]   Ext [Min-Max]
+-------+-----------------------------------+-----------------------------------
+  1000 |  0.65 [ 0.60- 0.91]   1.17 [ 1.12] |  0.80 [ 0.75- 2.14]  12.60 [12.16]
+  5000 |  3.50 [ 3.16-33.06]   8.34 [ 7.38] |  4.38 [ 3.89- 9.09]  84.20 [77.40]
+ 10000 |  7.11 [ 6.63- 7.64]  18.35 [17.20] |  9.16 [ 8.16-36.59] 196.14 [180.12]
+ 25000 | 18.05 [16.72-27.37]  63.12 [57.05] | 33.86 [22.04-64.21] 553.57 [535.84]
+\end{lstlisting}
+
+\begin{table}[H]
+    \caption{Resultados consolidados del Escenario A (Mediana y rango [Mín, Máx] sobre 10 repeticiones)}
+    \label{tab:escenario_a}
+    \centering
+    \footnotesize
+    \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}rcccc}
+        \toprule
+        $\mathbf{n}$ & \textbf{Heapq Ins (ms)} & \textbf{Fibonacci Ins (ms)} & \textbf{Heapq Ext (ms)} & \textbf{Fibonacci Ext (ms)} \\
+        \midrule
+        1\,000  & 0.65 [0.60 -- 0.91]   & 0.80 [0.75 -- 2.14]   & 1.17 [1.12 -- 2.18]   & 12.60 [12.16 -- 23.86] \\
+        5\,000  & 3.50 [3.16 -- 33.06]  & 4.38 [3.89 -- 9.09]   & 8.34 [7.38 -- 17.31]  & 84.20 [77.40 -- 113.85] \\
+        10\,000 & 7.11 [6.63 -- 7.64]   & 9.16 [8.16 -- 36.59]  & 18.35 [17.20 -- 29.84] & 196.14 [180.12 -- 210.80] \\
+        25\,000 & 18.05 [16.72 -- 27.37] & 33.86 [22.04 -- 64.21] & 63.12 [57.05 -- 99.45] & 553.57 [535.84 -- 582.79] \\
+        \bottomrule
+    \end{tabular*}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.88\textwidth]{fig_escenario_a_tiempos.png}
+    \caption{Comparativa temporal del Escenario A: Inserción y Extracción frente a $n$}
+    \label{fig:escenario_a}
+\end{figure}
+
+% -------------------------------------------------------------------------
+\subsection{Escenario B: carga intensiva de disminuciones de clave}
+Se ejecutó un banco con $q = 10n$ operaciones válidas de \texttt{decrease-key} aplicadas sobre elementos activos, intercalando una extracción cada 20 disminuciones (5 repeticiones).
+
+\begin{lstlisting}[language=Python, caption={Código del benchmark para el Escenario B ($q = 10n$ disminuciones)}, label={lst:escenario_b_code}]
+for n in [1000, 5000, 10000, 20000]:
+    q, fib = 10 * n, FibonacciHeap()
+    nodos = {i: fib.insert(claves[i], i) for i in range(n)}
+    activos = list(range(n)); t0 = time.perf_counter_ns()
+    for i in range(q):
+        uid = rng.choice(activos); nk = max(1, claves[uid] - rng.randint(1, 1000))
+        claves[uid] = nk; fib.decrease_key(nodos[uid], nk)
+        if (i + 1) % 20 == 0 and not fib.is_empty():
+            mn = fib.extract_min(); activos.remove(mn.value); del nodos[mn.value]
+    t_fib = (time.perf_counter_ns() - t0) / 1e6
+\end{lstlisting}
+
+\begin{lstlisting}[style=consolestyle, caption={Salida de consola del Escenario B (5 repeticiones, tiempos en ms)}]
+n      q        | T_Heapq (ms) [Rango] Fisico Activos | T_Fib (ms) [Rango]  Cortes Casc
+-------+--------+-------------------------------------+--------------------------------
+  1000    10000 |   38.54 [ 36.8- 45.1]   7529    500 |   32.78 [ 32.0- 45.6]     0    0
+  5000    50000 |  325.86 [306.7-358.0]  37032   2500 |  271.37 [255.1-277.4]     0    0
+ 10000   100000 |  996.49 [921.4-1144.]  74533   5000 |  808.61 [732.5-983.0]     2    0
+ 20000   200000 | 3307.86 [3040.-3478.] 148731  10000 | 2721.01 [2627.-2870.]     7    2
+\end{lstlisting}
+
+\begin{table}[H]
+    \caption{Resultados del Escenario B: $q = 10n$ disminuciones válidas sobre elementos activos}
+    \label{tab:escenario_b}
+    \centering
+    \scriptsize
+    \setlength{\tabcolsep}{3.5pt}
+    \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}rrccccr}
+        \toprule
+        $\mathbf{n}$ & $\mathbf{q}$ & $\mathbf{T_{\text{heapq}}}$ \textbf{Med (ms)} & $\mathbf{T_{\text{fib}}}$ \textbf{Med (ms)} & \textbf{Tam. Físico} & \textbf{Activos} & \textbf{Cortes} \\
+        \midrule
+        1\,000  & 10\,000  & 38.54 [36.88 -- 45.16]  & 32.78 [32.06 -- 45.61]  & 7\,529   & 500   & 0 \\
+        5\,000  & 50\,000  & 325.86 [306.73 -- 358.00] & 271.37 [255.14 -- 277.44] & 37\,032  & 2\,500 & 0 \\
+        10\,000 & 100\,000 & 996.49 [921.45 -- 1144.38] & 808.61 [732.55 -- 983.06] & 74\,533  & 5\,000 & 2 \\
+        20\,000 & 200\,000 & 3307.86 [3040.66 -- 3478.63] & 2721.01 [2627.89 -- 2870.42] & 148\,731 & 10\,000 & 7 \\
+        \bottomrule
+    \end{tabular*}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.485\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{fig_escenario_b_disminuciones.png}
+        \caption{Tiempo frente a $q$ disminuciones}
+        \label{fig:esc_b_tiempo}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.485\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{fig_escenario_b_tamano_heapq.png}
+        \caption{Inflación física en \texttt{heapq}}
+        \label{fig:esc_b_memoria}
+    \end{subfigure}
+    \caption{Evaluación del comportamiento en el Escenario B bajo alta tasa de disminución}
+    \label{fig:escenario_b}
+\end{figure}
+
+% -------------------------------------------------------------------------
+\subsection{Escenario C: algoritmo de Dijkstra en grafos sintéticos}
+Se implementó Dijkstra evaluando grafos dispersos ($|E| \approx 3|V|$) e intermedios ($|E| \approx 10|V|$) sobre 5 repeticiones.
+
+\begin{lstlisting}[language=Python, caption={Implementación compacta de Dijkstra con Montículo de Fibonacci}, label={lst:dijkstra_code}]
+def dijkstra_fibonacci(adj, src):
+    dist = {u: float('inf') for u in adj}; dist[src] = 0
+    fib = FibonacciHeap(); nodes = {src: fib.insert(0, src)}
+    while not fib.is_empty():
+        min_n = fib.extract_min(); d, u = min_n.key, min_n.value; del nodes[u]
+        if d > dist[u]: continue
+        for v, w in adj[u]:
+            if w < 0: raise ValueError("Pesos negativos")
+            nd = dist[u] + w
+            if nd < dist[v]:
+                dist[v] = nd
+                if v in nodes: fib.decrease_key(nodes[v], nd)
+                else: nodes[v] = fib.insert(nd, v)
+    return dist
+\end{lstlisting}
+
+\begin{lstlisting}[style=consolestyle, caption={Salida de consola de Dijkstra sobre grafos sintéticos (5 repeticiones)}]
+[Disperso (3V)  ] |V|= 500 |E|= 1500 -> Heapq=  2.39ms [ 2.25- 3.06] | Fib=  8.17ms [ 7.44-11.39] (100% Identico)
+[Disperso (3V)  ] |V|=1000 |E|= 3000 -> Heapq=  7.03ms [ 5.12- 8.32] | Fib= 19.50ms [17.11-25.48] (100% Identico)
+[Disperso (3V)  ] |V|=2000 |E|= 6000 -> Heapq= 13.23ms [12.31-20.00] | Fib= 42.11ms [39.94-54.86] (100% Identico)
+[Disperso (3V)  ] |V|=4000 |E|=12000 -> Heapq= 35.34ms [29.83-54.59] | Fib=100.08ms [93.38-109.81] (100% Identico)
+[Intermedio (10V)] |V|= 500 |E|= 5000 -> Heapq=  5.60ms [ 5.39- 7.55] | Fib= 12.24ms [10.86-21.16] (100% Identico)
+[Intermedio (10V)] |V|=1000 |E|=10000 -> Heapq= 12.54ms [11.80-14.35] | Fib= 24.23ms [22.15-25.64] (100% Identico)
+[Intermedio (10V)] |V|=2000 |E|=20000 -> Heapq= 30.44ms [28.63-39.75] | Fib= 57.20ms [55.59-73.17] (100% Identico)
+[Intermedio (10V)] |V|=4000 |E|=40000 -> Heapq= 85.35ms [81.61-122.27] | Fib=137.25ms [127.93-141.89] (100% Identico)
+[OK] Casos frontera en Dijkstra validados: desconexion, arista peso 0 y rechazo de pesos negativos.
+\end{lstlisting}
+
+\begin{table}[H]
+    \caption{Tiempos de ejecución de Dijkstra sobre grafos dispersos e intermedios}
+    \label{tab:dijkstra}
+    \centering
+    \scriptsize
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccccc}
+        \toprule
+        \textbf{Densidad} & $\mathbf{|V|}$ & $\mathbf{|E|}$ & $\mathbf{T_{\text{heapq}}}$ \textbf{Med (ms)} & $\mathbf{T_{\text{fib}}}$ \textbf{Med (ms)} & \textbf{Concordancia} \\
+        \midrule
+        Disperso ($3|V|$)    & 500   & 1\,500  & 2.39 [2.25 -- 3.06]   & 8.17 [7.44 -- 11.39]   & 100\% Idéntico \\
+        Disperso ($3|V|$)    & 1\,000 & 3\,000  & 7.03 [5.12 -- 8.32]   & 19.50 [17.11 -- 25.48]  & 100\% Idéntico \\
+        Disperso ($3|V|$)    & 2\,000 & 6\,000  & 13.23 [12.31 -- 20.00] & 42.11 [39.94 -- 54.86]  & 100\% Idéntico \\
+        Disperso ($3|V|$)    & 4\,000 & 12\,000 & 35.34 [29.83 -- 54.59] & 100.08 [93.38 -- 109.81] & 100\% Idéntico \\
+        \midrule
+        Intermedio ($10|V|$) & 500   & 5\,000  & 5.60 [5.39 -- 7.55]   & 12.24 [10.86 -- 21.16]  & 100\% Idéntico \\
+        Intermedio ($10|V|$) & 1\,000 & 10\,000 & 12.54 [11.80 -- 14.35] & 24.23 [22.15 -- 25.64]  & 100\% Idéntico \\
+        Intermedio ($10|V|$) & 2\,000 & 20\,000 & 30.44 [28.63 -- 39.75] & 57.20 [55.59 -- 73.17]  & 100\% Idéntico \\
+        Intermedio ($10|V|$) & 4\,000 & 40\,000 & 85.35 [81.61 -- 122.27] & 137.25 [127.93 -- 141.89] & 100\% Idéntico \\
+        \bottomrule
+    \end{tabular*}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.88\textwidth]{fig_escenario_c_dijkstra.png}
+    \caption{Rendimiento de Dijkstra en función de la cardinalidad de vértices y densidad}
+    \label{fig:escenario_c}
+\end{figure}
+
+% -------------------------------------------------------------------------
+\subsection{Respuestas a las preguntas de análisis de la guía}
+
+\subsubsection*{1. ¿En qué operaciones coincide el comportamiento observado con las cotas teóricas?}
+Coincide en la inserción $O(1)$, unión $O(1)$ y disminución de clave $O(1)$ amortizado. En estas operaciones, la duración se mantiene en microsegundos. La extracción también mantiene su comportamiento logarítmico $O(\log n)$.
+
+\subsubsection*{2. ¿Por qué heapq puede ser más rápido aunque decrease-key sea $O(\log n)$?}
+El módulo \texttt{heapq} está implementado en lenguaje C optimizado y opera sobre arreglos en memoria contigua. Esto aprovecha la caché del procesador y evita la creación de objetos dinámicos en Python.
+
+\subsubsection*{3. ¿Qué costo introduce la estrategia de inserciones obsoletas en heapq?}
+Genera un sobrecosto de memoria al almacenar las entradas repetidas, llegando a inflar la estructura más de 10 veces. También añade un sobrecosto de tiempo al aumentar la altura del árbol binario.
+
+\subsubsection*{4. ¿Cuándo aparece una ventaja observable para el montículo de Fibonacci?}
+La ventaja se nota cuando hay muchas más disminuciones de clave que extracciones ($q/n \ge 10$). En estos casos, su costo amortizado $O(1)$ resulta más rápido en tiempo absoluto que \texttt{heapq}.
+
+\subsubsection*{5. ¿Cómo cambia $\Phi(H)$ durante inserciones, consolidaciones y cortes?}
+\begin{itemize}
+    \item \textbf{Inserción:} Aporta $+1$ al potencial.
+    \item \textbf{Consolidación:} Enlaza raíces y reduce mucho el potencial.
+    \item \textbf{Cortes:} El corte simple suma $+3$, mientras que cada corte en cascada descuenta $-1$.
+\end{itemize}
+
+\subsubsection*{6. ¿Por qué una operación con varios cortes puede seguir teniendo costo amortizado $O(1)$?}
+Porque los cortes en cascada liberan el potencial acumulado previamente. Este potencial compensa el costo real de recorrer y cortar múltiples nodos en el árbol.
+
+\subsubsection*{7. ¿Qué errores de implementación detectaron los verificadores de invariantes?}
+Detectaron raíces que mantenían la marca \texttt{mark=True} tras ser promovidas en la extracción del mínimo. También encontraron referencias erróneas en los nodos padre y errores de grado tras realizar cortes simples.
+
+\subsubsection*{8. ¿Recomendaría esta implementación para un sistema real en Python?}
+No en Python interpretado estándar, porque el manejo de punteros dinámicos anula su ventaja asintótica. Solo es útil si se implementa en lenguajes como C o C++ para procesar grafos muy densos.
